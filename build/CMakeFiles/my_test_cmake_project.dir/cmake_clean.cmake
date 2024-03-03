@@ -9,8 +9,6 @@ file(REMOVE_RECURSE
   "CMakeFiles/my_test_cmake_project.dir/src/glad.c.o.d"
   "CMakeFiles/my_test_cmake_project.dir/src/main.cpp.o"
   "CMakeFiles/my_test_cmake_project.dir/src/main.cpp.o.d"
-  "CMakeFiles/my_test_cmake_project.dir/src/math.cpp.o"
-  "CMakeFiles/my_test_cmake_project.dir/src/math.cpp.o.d"
   "my_test_cmake_project"
   "my_test_cmake_project.pdb"
 )

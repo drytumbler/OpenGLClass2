@@ -10,7 +10,7 @@ add_executable(
         src/glad.c
         src/TriangleMesh.cpp
         src/Material.cpp
-        src/math.cpp
+        #src/math.cpp
 )
 
 target_include_directories(my_test_cmake_project PRIVATE include)

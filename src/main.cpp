@@ -5,7 +5,7 @@
 #include "config.h"
 #include "TriangleMesh.h"
 #include "Material.h"
-#include "math.h"
+//#include "math.h"
 
 int main()
 {
@@ -40,17 +40,41 @@ int main()
     
 
     //setup MVP
-    vec3 translation = {-0.25f, -0.35f, 0.0f};
-    mat4 model = Translate(translation);
-
+    glm::vec3 translation = {-0.25f, 0.35f, 0.0f};
+    //mat4 model = Translate(translation);
     unsigned int u_Model = glGetUniformLocation(shader, "model");
     //glUniformMatrix4fv(u_Model, 1, GL_FALSE, model.entries);
+
+    glm::vec3 cameraPosition = {-1.25, 0.0, 1.22};
+    glm::vec3 cameraTarget = {0.0, 0.0, 0.0};
+    glm::vec3 up = {0.0f, 0.0f, 1.0f};
+    //mat4 view = Viewpoint(cameraPosition, cameraTarget);
+    glm::mat4 view = glm::lookAt(cameraPosition, cameraTarget, up);
+    unsigned int u_View  = glGetUniformLocation(shader, "view");
+    //glUniformMatrix4fv(u_View, 1, GL_FALSE, view.entries);
+    glUniformMatrix4fv(u_View, 1, GL_FALSE, glm::value_ptr(view));
+
+    // mat4 projection = Project(
+    //     PI / 2.0,
+    //     WIDTH / HEIGHT,
+    //     0.1f,
+    //     10.0f
+    // );
+    glm::mat4 projection = glm::perspective(
+        PI / 2.0,
+        1.0 * width / height,
+        0.1,
+        10.0
+    );
+    unsigned int u_Projection = glGetUniformLocation(shader, "projection");
+    glUniformMatrix4fv(u_Projection, 1, GL_FALSE, glm::value_ptr(projection));
+
 
 
     //setup bleding options
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    
+
     // Game loop
     while (!glfwWindowShouldClose(window))
     {
@@ -59,8 +83,11 @@ int main()
 
         // Render
 
-        model = TranslateRotZ(translation, 2.50 * glfwGetTime());
-        glUniformMatrix4fv(u_Model, 1, GL_FALSE, model.entries);
+        //mat4 model = TranslateRotZ(translation, .250 * glfwGetTime());
+        glm::mat4 model = glm::mat4(1.0); //fill diagonal
+        model = glm::translate(model, translation);
+        model = glm::rotate(model, 17.0f*(float)glfwGetTime(), {0.0f, 0.0f, 1.0f});
+        glUniformMatrix4fv(u_Model, 1, GL_FALSE, glm::value_ptr(model));
 
         // Clear the colorbuffer       
         glClear(GL_COLOR_BUFFER_BIT);

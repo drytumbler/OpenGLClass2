@@ -13,5 +13,5 @@ void main(){
 
     vec3 baseColor = texture(material, fragmentTexCoord).rgb;
     float alpha = texture(mask, fragmentTexCoord).a;
-    screenColor = vec4(baseColor, 1 - alpha);
+    screenColor = vec4(baseColor, (1.0 - alpha)*(0.75-alpha));
 }

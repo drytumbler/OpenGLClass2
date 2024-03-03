@@ -23,10 +23,5 @@
   "directory": "/home/ruben/VisualStudioCode/OpenGL2/build",
   "command": "/usr/bin/g++  -I/home/ruben/VisualStudioCode/OpenGL2/include -g -o CMakeFiles/my_test_cmake_project.dir/src/Material.cpp.o -c /home/ruben/VisualStudioCode/OpenGL2/src/Material.cpp",
   "file": "/home/ruben/VisualStudioCode/OpenGL2/src/Material.cpp"
-},
-{
-  "directory": "/home/ruben/VisualStudioCode/OpenGL2/build",
-  "command": "/usr/bin/g++  -I/home/ruben/VisualStudioCode/OpenGL2/include -g -o CMakeFiles/my_test_cmake_project.dir/src/math.cpp.o -c /home/ruben/VisualStudioCode/OpenGL2/src/math.cpp",
-  "file": "/home/ruben/VisualStudioCode/OpenGL2/src/math.cpp"
 }
 ]
