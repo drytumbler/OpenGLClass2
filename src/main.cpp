@@ -4,6 +4,8 @@
 
 #include "config.h"
 #include "TriangleMesh.h"
+#include "Material.h"
+
 int main()
 {
 
@@ -11,9 +13,16 @@ int main()
     GLFWwindow *window = createWindow();
 
     // Set the clear color
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClearColor(0.9f, 0.85f, 0.65f, 1.0f);
+
+    // Setup viewport
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
 
     TriangleMesh* triangle = new TriangleMesh();
+    Material* material = new Material("../src/textures/lenna.png");
+    Material* mask = new Material("../src/textures/mask.png");
+
 
     //setup shaders
     unsigned int shader = makeShaderProg(
@@ -21,6 +30,17 @@ int main()
         "../src/shaders/fragment.shader"
     );
 
+    //bind the shader
+    glUseProgram(shader); //always load shader before applying further changes
+
+    //setup texture uniforms
+    glUniform1i(glGetUniformLocation(shader, "material"), 0);
+    glUniform1i(glGetUniformLocation(shader, "mask"), 1);
+    
+    //setup belding options
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
     // Game loop
     while (!glfwWindowShouldClose(window))
     {
@@ -36,12 +56,21 @@ int main()
         glUseProgram(shader);
 
         // Draw the triangle
+        material->use(0);
+        mask->use(1);
+
         triangle->draw();
 
         // Swap the screen buffers
         glfwSwapBuffers(window);
     }
 
+    //cleanup
+    glDeleteProgram(shader);
+    delete triangle;
+    delete material;
+    delete mask;
+    
     // Terminates GLFW, clearing any resources allocated by GLFW.
     glfwTerminate();
     return 0;

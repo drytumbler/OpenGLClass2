@@ -1,0 +1,3 @@
+/home/ruben/VisualStudioCode/OpenGL2/build/CMakeFiles/my_test_cmake_project.dir
+/home/ruben/VisualStudioCode/OpenGL2/build/CMakeFiles/edit_cache.dir
+/home/ruben/VisualStudioCode/OpenGL2/build/CMakeFiles/rebuild_cache.dir
