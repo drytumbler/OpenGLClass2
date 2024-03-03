@@ -5,6 +5,7 @@
 #include "config.h"
 #include "TriangleMesh.h"
 #include "Material.h"
+#include "math.h"
 
 int main()
 {
@@ -37,7 +38,16 @@ int main()
     glUniform1i(glGetUniformLocation(shader, "material"), 0);
     glUniform1i(glGetUniformLocation(shader, "mask"), 1);
     
-    //setup belding options
+
+    //setup MVP
+    vec3 translation = {-0.25f, -0.35f, 0.0f};
+    mat4 model = Translate(translation);
+
+    unsigned int u_Model = glGetUniformLocation(shader, "model");
+    //glUniformMatrix4fv(u_Model, 1, GL_FALSE, model.entries);
+
+
+    //setup bleding options
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
@@ -48,6 +58,9 @@ int main()
         glfwPollEvents();
 
         // Render
+
+        model = TranslateRotZ(translation, 2.50 * glfwGetTime());
+        glUniformMatrix4fv(u_Model, 1, GL_FALSE, model.entries);
 
         // Clear the colorbuffer       
         glClear(GL_COLOR_BUFFER_BIT);

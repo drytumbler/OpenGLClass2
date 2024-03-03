@@ -13,6 +13,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/ruben/VisualStudioCode/OpenGL2/src/TriangleMesh.cpp" "CMakeFiles/my_test_cmake_project.dir/src/TriangleMesh.cpp.o" "gcc" "CMakeFiles/my_test_cmake_project.dir/src/TriangleMesh.cpp.o.d"
   "/home/ruben/VisualStudioCode/OpenGL2/src/config.cpp" "CMakeFiles/my_test_cmake_project.dir/src/config.cpp.o" "gcc" "CMakeFiles/my_test_cmake_project.dir/src/config.cpp.o.d"
   "/home/ruben/VisualStudioCode/OpenGL2/src/main.cpp" "CMakeFiles/my_test_cmake_project.dir/src/main.cpp.o" "gcc" "CMakeFiles/my_test_cmake_project.dir/src/main.cpp.o.d"
+  "/home/ruben/VisualStudioCode/OpenGL2/src/math.cpp" "CMakeFiles/my_test_cmake_project.dir/src/math.cpp.o" "gcc" "CMakeFiles/my_test_cmake_project.dir/src/math.cpp.o.d"
   )
 
 # Targets to which this target links.
