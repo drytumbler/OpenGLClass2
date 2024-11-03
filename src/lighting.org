@@ -1,0 +1,74 @@
+* Lighting math
+Ah, I see the issue! If the light source is stationary but the object rotates, the lighting on the object should change realistically to reflect the object's changing orientation with respect to the stationary light. This is typically an issue of how the normals and transformations are handled in your shaders or the application of the model matrix to your normals.
+Explanation:
+
+When an object rotates, its surface normals also need to be rotated correctly to reflect how the light interacts with the surface. If the normals aren't transformed properly or if the lighting calculation uses the object space rather than world space, it can appear as if the lighting rotates with the object.
+
+** Solution Steps:
+- Ensure the normal matrix is updated correctly in your vertex shader.
+- Transform normals correctly to world space or view space for accurate lighting calculations.
+
+** Correct Handling of Normals:
+
+Ensure that in your vertex shader, you use a normal matrix to transform the normals properly:
+
+#+begin_src: glsl
+
+#version 330 core
+
+// Inputs from the vertex buffer or the vertex shader
+in vec3 vertexPosition;
+in vec3 vertexNormal;
+
+// Outputs to the fragment shader
+out vec3 fragNormal;
+out vec3 fragPosition;
+
+// Uniforms for the transformation matrices
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
+// Normal matrix for transforming normals (inverse transpose of the model matrix)
+uniform mat3 normalMatrix;
+
+void main() {
+    // Calculate the transformed position of the vertex in world space
+    vec4 worldPosition = model * vec4(vertexPosition, 1.0);
+    fragPosition = vec3(worldPosition);
+
+    // Transform the normal to world space using the normal matrix
+    fragNormal = normalize(normalMatrix * vertexNormal);
+
+    // Final position of the vertex on the screen
+    gl_Position = projection * view * worldPosition;
+}
+
+#+END_SRC:
+
+
+** Updating the Normal Matrix in Your Code:
+
+In your C++ code, make sure to calculate the normalMatrix as the inverse transpose of the model matrix:
+
+#+BEGIN_SRC: cpp
+
+glm::mat4 model = ... // Your object's model matrix
+glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(model)));
+
+// Pass this matrix to your shader
+glUniformMatrix3fv(glGetUniformLocation(shader.ID, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(normalMatrix));
+
+#+END_SRC:
+
+** Why This Works:
+
+    The normal matrix ensures that when the model rotates or scales, the normals are transformed correctly, so the lighting calculations remain realistic. This is especially important for non-uniform scaling.
+    If you apply the model matrix directly to normals without using the normal matrix (inverse transpose), the normals can become distorted, leading to incorrect lighting results.
+
+** Final Notes:
+
+    Ensure your fragment shader uses the transformed normals (fragNormal) for lighting calculations against the light source position.
+    Verify that the light source is defined in the appropriate space (world or view space) to match the space of the transformed normals.
+
+This approach should correct the issue where lighting appears to rotate with the object, ensuring the light interacts with the surface realistically as the object rotates.

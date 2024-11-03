@@ -1,232 +1,348 @@
 // This example is taken from http://learnopengl.com/
 // http://learnopengl.com/code_viewer.php?code=getting-started/hellowindow2
+// the cherno -- https://www.youtube.com/watch?v=H2E3yO0J7TM&list=PLlrATfBNZ98foTJPJ_Ev03o2oq3-GGOS2&index=3
+// freecodecamp -- https://www.youtube.com/watch?v=45MIykWJ-C4&t=1237s
 // The code originally used GLEW, I replaced it with Glad
 
-#include "config.h"
-#include "TriangleMesh.h"
+//#include "config.h"
 #include "Material.h"
+#include "TriangleMesh.h"
+#include "Shader.h"
+#include "VBO.h"
+#include "Camera.h"
+#include <glm/ext/matrix_transform.hpp>
 //#include "math.h"
+
 
 int main()
 {
+  std::cout << "Size of float: " << sizeof(float) << " bytes\n";
+  std::cout << "Size of int: " << sizeof(int) << " bytes\n";
+  /*
+  const std::vector<float> vertices = {
+    -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 
+    1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 
+    1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 
+    -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 
+  };
+  */
 
-    setupGLFW();
-    GLFWwindow *window = createWindow();
-
-    // Set the clear color
-    glClearColor(0.9f, 0.85f, 0.65f, 1.0f);
-
-    // Setup viewport
-    int width, height;
-    glfwGetFramebufferSize(window, &width, &height);
-
-    TriangleMesh* triangle = new TriangleMesh();
-    Material* material = new Material("../src/textures/lenna.png");
-    Material* mask = new Material("../src/textures/mask.png");
-
-
-    //setup shaders
-    unsigned int shader = makeShaderProg(
-        "../src/shaders/vertex.shader",
-        "../src/shaders/fragment.shader"
-    );
-
-    //bind the shader
-    glUseProgram(shader); //always load shader before applying further changes
-
-    //setup texture uniforms
-    glUniform1i(glGetUniformLocation(shader, "material"), 0);
-    glUniform1i(glGetUniformLocation(shader, "mask"), 1);
+  // Vertices coordinates
+  std::vector<float> vertices =
     
-
-    //setup MVP
-    glm::vec3 translation = {-0.25f, 0.35f, 0.0f};
-    //mat4 model = Translate(translation);
-    unsigned int u_Model = glGetUniformLocation(shader, "model");
-    //glUniformMatrix4fv(u_Model, 1, GL_FALSE, model.entries);
-
-    glm::vec3 cameraPosition = {-1.25, 0.0, 1.22};
-    glm::vec3 cameraTarget = {0.0, 0.0, 0.0};
-    glm::vec3 up = {0.0f, 0.0f, 1.0f};
-    //mat4 view = Viewpoint(cameraPosition, cameraTarget);
-    glm::mat4 view = glm::lookAt(cameraPosition, cameraTarget, up);
-    unsigned int u_View  = glGetUniformLocation(shader, "view");
-    //glUniformMatrix4fv(u_View, 1, GL_FALSE, view.entries);
-    glUniformMatrix4fv(u_View, 1, GL_FALSE, glm::value_ptr(view));
-
-    // mat4 projection = Project(
-    //     PI / 2.0,
-    //     WIDTH / HEIGHT,
-    //     0.1f,
-    //     10.0f
-    // );
-    glm::mat4 projection = glm::perspective(
-        PI / 2.0,
-        1.0 * width / height,
-        0.1,
-        10.0
-    );
-    unsigned int u_Projection = glGetUniformLocation(shader, "projection");
-    glUniformMatrix4fv(u_Projection, 1, GL_FALSE, glm::value_ptr(projection));
-
-
-
-    //setup bleding options
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    // Game loop
-    while (!glfwWindowShouldClose(window))
+    { //     COORDINATES     /        COLORS          /    TexCoord   /        NORMALS       //
+      -0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f, 	 0.0f, 0.0f,      0.0f, -1.0f, 0.0f, // Bottom side
+      -0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 0.0f, 1.0f,      0.0f, -1.0f, 0.0f, // Bottom side
+      0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 1.0f, 1.0f,      0.0f, -1.0f, 0.0f, // Bottom side
+      0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	 1.0f, 0.0f,      0.0f, -1.0f, 0.0f, // Bottom side
+      
+      -0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f, 	 0.0f, 0.0f,     -0.8f, 0.5f,  0.0f, // Left Side
+      -0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 1.0f, 0.0f,     -0.8f, 0.5f,  0.0f, // Left Side
+      0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	 0.5f, 1.0f,     -0.8f, 0.5f,  0.0f, // Left Side
+      
+      -0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 2.0f, 0.0f,      0.0f, 0.5f, -0.8f, // Non-facing side
+      0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 0.0f, 0.0f,      0.0f, 0.5f, -0.8f, // Non-facing side
+      0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	 0.5f, 1.0f,      0.0f, 0.5f, -0.8f, // Non-facing side
+      
+      0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 0.0f, 0.0f,      0.8f, 0.5f,  0.0f, // Right side
+      0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	 1.0f, 0.0f,      0.8f, 0.5f,  0.0f, // Right side
+      0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	 0.5f, 1.0f,      0.8f, 0.5f,  0.0f, // Right side
+      
+      0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	 1.0f, 0.0f,      0.0f, 0.5f,  0.8f, // Facing side
+      -0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f, 	 0.0f, 0.0f,      0.0f, 0.5f,  0.8f, // Facing side
+      0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	 0.5f, 1.0f,      0.0f, 0.5f,  0.8f  // Facing side
+    };
+  
+  // Indices for vertices order
+  std::vector<unsigned int> indices =
     {
-        // Check if any events have been activated (key pressed, mouse moved etc.) and call corresponding response functions
-        glfwPollEvents();
+      0, 1, 2, // Bottom side
+      0, 2, 3, // Bottom side
+      4, 6, 5, // Left side
+      7, 9, 8, // Non-facing side
+      10, 12, 11, // Right side
+      13, 15, 14 // Facing side
+    };
+  
+  std::vector<float> lightVertices =
+    { //     COORDINATES     //
+      -0.1f, -0.1f,  0.1f,
+      -0.1f, -0.1f, -0.1f,
+      0.1f, -0.1f, -0.1f,
+      0.1f, -0.1f,  0.1f,
+      -0.1f,  0.1f,  0.1f,
+      -0.1f,  0.1f, -0.1f,
+      0.1f,  0.1f, -0.1f,
+      0.1f,  0.1f,  0.1f
+    };
+  
+  std::vector<VertexAttribute> lightAttributes = {
+    VertexAttribute(4, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*) 0, false)
+  };
+  
+  std::vector<unsigned int> lightIndices =
+    {
+      0, 1, 2,
+      0, 2, 3,
+      0, 4, 7,
+      0, 7, 3,
+      3, 7, 6,
+      3, 6, 2,
+      2, 6, 5,
+      2, 5, 1,
+      1, 5, 4,
+      1, 4, 0,
+      4, 5, 6,
+      4, 6, 7
+    };
+  
+  
+  
+  /*
+    const std::vector<GLuint> indices = {
+    0, 1, 3, 1, 2, 3
+    };
+  */
+  
+  setupGLFW();
+  GLFWwindow *window = createWindow();
+  
+  // Set the clear color
+  glClearColor(0.19f, 0.185f, 0.165f, 1.0f);
+  
+  // Setup viewport
+  int width, height;
+  glfwGetFramebufferSize(window, &width, &height);
+  
+  // Stuff
+  GLint maxVertices, maxIndices;
+  glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &maxVertices);
+  glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &maxIndices);
+  std::cout << "Max vertices: " << maxVertices << ", Max indices: " << maxIndices << std::endl;
+  
+  std::vector<VertexAttribute> attributes = {
+    VertexAttribute(0, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*) 0, false),
+    VertexAttribute(1, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*) (3 * sizeof(float)), false),
+    VertexAttribute(2, 2, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*) (6 * sizeof(float)), false),
+    VertexAttribute(3, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*) (8 * sizeof(float)), false),
+  };
+  
+  VBO* vbo = new VBO(vertices, attributes);
+  IBO* ibo = new IBO(indices, indices.size());
+  
+  VBO* lightVBO = new VBO(lightVertices, lightAttributes);
+  IBO* lightIBO = new IBO(lightIndices, lightIndices.size());
+  
+  
+  std::vector<VBO*> VBOs;
+  VBOs.push_back(vbo);
+  
+  std::vector<VBO*> lightVBOs;
+  lightVBOs.push_back(lightVBO);
 
-        // Render
+  
+  TriangleMesh* triangle = new TriangleMesh(VBOs, ibo); // it's a square!
+  triangle->Report();
 
-        //mat4 model = TranslateRotZ(translation, .250 * glfwGetTime());
-        glm::mat4 model = glm::mat4(1.0); //fill diagonal
-        model = glm::translate(model, translation);
-        model = glm::rotate(model, 17.0f*(float)glfwGetTime(), {0.0f, 0.0f, 1.0f});
-        glUniformMatrix4fv(u_Model, 1, GL_FALSE, glm::value_ptr(model));
+  TriangleMesh* cube = new TriangleMesh(lightVBOs, lightIBO);
+  cube->Report();
+  
+  Material* material = new Material("../src/textures/lenna.png");
 
-        // Clear the colorbuffer       
-        glClear(GL_COLOR_BUFFER_BIT);
+  Material* mask = new Material("../src/textures/mask.png");
 
-        // Apply the shader
-        glUseProgram(shader);
+  Material* sandstone = new Material("../src/textures/sandstone.png");
+  
+  
+  //setup shaders
+  Shader shader(
+		"../src/shaders/default.vert",
+		"../src/shaders/default.frag"
+		);
 
-        // Draw the triangle
-        material->use(0);
-        mask->use(1);
+  Shader lightShader(
+		    "../src/shaders/light.vert",
+		    "../src/shaders/light.frag"
+		     );
 
-        triangle->draw();
 
-        // Swap the screen buffers
-        glfwSwapBuffers(window);
+  glm::vec4 lightColor = glm::vec4(1.0f, 0.9f, 0.7f, 1.0f);
+
+  // setup models
+  glm::vec3 lightPos = glm::vec3(0.7f, 2.5f, 0.5f);
+  glm::mat4 lightModel = glm::mat4(1.0f);
+  lightModel = glm::translate(lightModel, lightPos);
+
+  glm::vec3 pyramidPos = glm::vec3(0.0f, 0.0f, 0.0f);
+  glm::mat4 pyramidModel = glm::mat4(1.0f);
+  pyramidModel = glm::translate(pyramidModel, pyramidPos);
+
+  glm::mat3 normalMatrix = glm::mat3(1.0f);
+  glUniformMatrix3fv(glGetUniformLocation(shader.ID, "normal"), 1, GL_FALSE, glm::value_ptr(normalMatrix));
+
+  lightShader.Activate();
+  glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(lightModel));
+  
+  //bind the shader
+  //glUseProgram(shader.ID); //always load shader before applying further changes
+  shader.Activate();
+  glUniform4f(glGetUniformLocation(shader.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.a);
+  glUniform3f(glGetUniformLocation(shader.ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
+  //setup texture uniforms
+  glUniform1i(glGetUniformLocation(shader.ID, "material"), 0);
+  glUniform1i(glGetUniformLocation(shader.ID, "mask"), 1);
+  glUniform1i(glGetUniformLocation(shader.ID, "sandstone"), 2);
+  
+  glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(pyramidModel));
+
+  Camera camera(width, height, glm::vec3(0.0f, 0.0f, 1.0f));
+  
+  //setup blending options
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_ONE, GL_ZERO);
+  glDepthFunc(GL_LESS);
+  glDepthRange(0.1f, 100.0f);
+
+  glEnable(GL_MULTISAMPLE);
+
+ 
+  // uniforms
+  float time=0.0f, scale=1.0f;
+  GLuint u_Time, u_Scale;
+  u_Time = glGetUniformLocation(shader.ID, "time");
+  u_Scale = glGetUniformLocation(shader.ID, "scale");
+  
+  // Game loop
+
+  while (!glfwWindowShouldClose(window))
+    {
+      // Check if any events have been activated (key pressed, mouse moved etc.) and call corresponding response functions
+      glfwPollEvents();
+      camera.Inputs(window);
+       
+      time = (float)glfwGetTime();
+      scale = sin(time);
+  
+      glClearColor(0.019f, 0.0185f, 0.0165f, 1.0f);
+
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+      pyramidModel = glm::rotate(pyramidModel, glm::radians(1.0f), glm::vec3(0.0f,1.0f,0.0f));
+      normalMatrix = glm::transpose(glm::inverse(glm::mat3(pyramidModel)));
+
+      //lightModel = glm::mat4(1.0f);
+      lightModel = glm::translate(lightModel, -lightPos);
+      lightModel = glm::rotate(lightModel, glm::radians(1.0f), glm::vec3(0.0f,1.0f,0.0f));
+      lightModel = glm::translate(lightModel, lightPos);
+
+      // Apply the shader
+      shader.Activate();
+      glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(pyramidModel));
+      glUniformMatrix3fv(glGetUniformLocation(shader.ID, "normal"), 1, GL_FALSE, glm::value_ptr(normalMatrix));
+      camera.Update(PI / 2.0f, 0.1f, 100.0f);
+      camera.Export(shader, "camMatrix");
+      
+      // Update uniforms
+      glUniform1f(u_Scale, scale);
+      glUniform1f(u_Time, time);
+
+
+      
+      
+      // Draw the triangle
+      material->Use();
+      mask->Use();
+      sandstone->Use();
+      
+      triangle->draw();
+      lightShader.Activate();
+      glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(lightModel));
+      camera.Export(lightShader, "camMatrix");
+      cube->draw();
+
+      // Swap the screen buffers
+      glfwSwapBuffers(window);
     }
-
-    //cleanup
-    glDeleteProgram(shader);
-    delete triangle;
-    delete material;
-    delete mask;
+  
+  //cleanup
+  shader.Delete();
+  delete triangle;
+  delete material;
+  delete mask;
+  delete vbo;
+  
     
-    // Terminates GLFW, clearing any resources allocated by GLFW.
-    glfwTerminate();
-    return 0;
+  // Terminates GLFW, clearing any resources allocated by GLFW.
+  glfwTerminate();
+  return 0;
 }
 
 // Is called whenever a key is pressed/released via GLFW
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode)
 {
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, GL_TRUE);
+  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    glfwSetWindowShouldClose(window, GL_TRUE);
 }
+
+// Mouse position callback function
+void mousePositionCallback(GLFWwindow* window, double xpos, double ypos) {
+  std::cout << "Mouse Position: (" << xpos << ", " << ypos << ")\n";
+}
+
+// Mouse button callback function
+void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+  if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+    std::cout << "Left Mouse Button Pressed\n";
+  else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
+    std::cout << "Left Mouse Button Released\n";
+}
+
 
 void setupGLFW()
 {
-    // Init GLFW
-    glfwInit();
-    // Set all the required options for GLFW
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+  // Init GLFW
+  glfwInit();
+  // Set all the required options for GLFW
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+  glfwWindowHint(GLFW_SAMPLES, 16); // 4x MSAA
 
-    std::cout << "Starting GLFW context, OpenGL " << glfwGetVersionString() << std::endl;
+  std::cout << "Starting GLFW context, OpenGL " << glfwGetVersionString() << std::endl;
 }
 
 GLFWwindow *createWindow()
 {
-    // Create a GLFWwindow object that we can use for GLFW's functions
-    GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", NULL, NULL);
+  // Create a GLFWwindow object that we can use for GLFW's functions
+  GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", NULL, NULL);
 
-    if (window == NULL)
+  if (window == NULL)
     {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return nullptr;
+      std::cout << "Failed to create GLFW window" << std::endl;
+      glfwTerminate();
+      return nullptr;
     }
 
-    glfwMakeContextCurrent(window);
+  glfwMakeContextCurrent(window);
 
-    // Set the required callback functions
-    glfwSetKeyCallback(window, key_callback);
+  // Set the required callback functions
+  glfwSetKeyCallback(window, key_callback);
+  // Set mouse callbacks
+  glfwSetCursorPosCallback(window, mousePositionCallback);
+  glfwSetMouseButtonCallback(window, mouseButtonCallback);
 
-    // Load OpenGL functions, gladLoadGL returns the loaded version, 0 on error.
-    int version = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-    if (version == 0)
+  // Load OpenGL functions, gladLoadGL returns the loaded version, 0 on error.
+  int version = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+  if (version == 0)
     {
-        std::cout << "Failed to initialize OpenGL context" << std::endl;
-        return nullptr;
+      std::cout << "Failed to initialize OpenGL context" << std::endl;
+      return nullptr;
     }
 
-    // Define the viewport dimensions
+  // Define the viewport dimensions
 
-    glViewport(0, 0, WIDTH, HEIGHT);
-    return window;
-}
-
-unsigned int makeShaderMod(const std::string& filepath, unsigned int shader_type){
-    
-    // load the shader code (cpu)
-    std::ifstream file;
-    std::stringstream bufferedLines;
-    std::string line;
-
-    file.open(filepath);
-    while (std::getline(file, line)){
-        bufferedLines << line << "\n";
-    }
-    std::string shaderSource = bufferedLines.str();
-    const char* shaderSrc = shaderSource.c_str();
-    bufferedLines.str("");
-    file.close();
-
-    //load and compile the shader module (gpu)
-    unsigned int shaderModule = glCreateShader(shader_type);
-    glShaderSource(shaderModule, 1, &shaderSrc, NULL);
-    glCompileShader(shaderModule);
-
-    //error handling
-    int succes;
-    glGetShaderiv(shaderModule, GL_COMPILE_STATUS, &succes);
-    if(!succes){
-        char errorLog[1024];
-        glGetShaderInfoLog(shaderModule, 1024, NULL, errorLog);
-        std::cout << "Shader Module Compilation Error:\n" <<errorLog << std::endl;
-
-        return 0;
-    }
-
-    return shaderModule;
-}
-
-unsigned int makeShaderProg(const std::string& vertex_filepath, const std::string& fragment_filepath){
-    std::vector<unsigned int> modules;
-    modules.push_back(makeShaderMod(vertex_filepath, GL_VERTEX_SHADER));
-    modules.push_back(makeShaderMod(fragment_filepath, GL_FRAGMENT_SHADER));
-
-    unsigned int shaderProgram = glCreateProgram();
-    for (unsigned int shaderModule : modules){
-        glAttachShader(shaderProgram, shaderModule);
-    }
-    glLinkProgram(shaderProgram);
-
-    //error handling
-    int succes;
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &succes);
-    if(!succes){
-        char errorLog[1024];
-        glGetProgramInfoLog(shaderProgram, 1024, NULL, errorLog);
-        std::cout << "Shader Program Linking Error:\n" <<errorLog << std::endl;
-
-        return 0;
-    }
-    //clean up
-    for (unsigned int shaderModule : modules){
-        glDeleteShader(shaderModule);
-    }
-
-    return shaderProgram;
+  glViewport(0, 0, WIDTH, HEIGHT);
+  return window;
 }

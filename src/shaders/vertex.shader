@@ -1,25 +1,27 @@
 #version 330 core
 
 layout (location = 0) in vec3 vertexPos;
-//layout (location = 1) in int colorIndex;
+layout (location = 1) in vec3 vertexColor;
+layout (location = 2) in vec2 texPos;
+layout (location = 3) in vec3 vertexNormals;
 
-//out vec3 fragmentColor;
-
+out vec3 fragmentColor;
 out vec2 fragmentTexCoord;
 
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
+//uniform mat4 model;
+//uniform mat4 view;
+//uniform mat4 proj;
 
-const vec3 colors[4] = vec3[](
-    vec3(1.0, 0.0, 0.0),
-    vec3(0.0, 1.0, 0.0),
-    vec3(1.0, 1.0, 0.0),
-    vec3(0.0, 0.0, 1.0)
-);
+uniform mat4 camMatrix;
+
+uniform float time;
+uniform float scale;
+
 void main(){
-    gl_Position = projection * view * model * vec4(vertexPos, 1.0);
-    //fragmentColor = colors[colorIndex];
+
+    gl_Position = camMatrix * vec4(vertexPos, 1.0);
+    //fragmentColor = vertexColor;
     //fragmentColor = colors[gl_VertexID];
-    fragmentTexCoord = vec2(0.5f, 0.5f) * (vertexPos.xy + vec2(1.0));
+    //fragmentTexCoord = vec2(0.25 * scale, 0.25 * scale) * (texPos + vertexPos.xy + vec2(2.0));
+    fragmentTexCoord = texPos;
 }

@@ -1,10 +1,12 @@
+#pragma once
+
 #include "config.h"
 
 class Material{
     public:
         Material(const char* filename);
         ~Material();
-        void use(int index);
+        void Use();
     private:
-    unsigned int texture;
+    GLuint textureID;
 };

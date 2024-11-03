@@ -1,35 +1,49 @@
 #include "Material.h"
-#include <stb/stb_image.h>
+#include "../include/stb_image.h"
 
 Material::Material(const char *filename)
 {
     //load the image (cpu)
     int width, height, channels;
 
-    stbi_set_flip_vertically_on_load(false);
+    stbi_set_flip_vertically_on_load(true);
     unsigned char* data = stbi_load(
         filename, 
         &width, 
         &height, 
         &channels, 
-        STBI_rgb_alpha
+        0 // STBI_rgb_alpha
     );
+    
+    // Determine the format of the image data
+    GLenum format;
+    if (channels == 1) {
+        format = GL_RED;
+    } else if (channels == 3) {
+        format = GL_RGB;
+    } else if (channels == 4) {
+        format = GL_RGBA;
+    } else {
+        std::cerr << "Unsupported number of channels: " << channels << std::endl;
+        stbi_image_free(data);
+    }
 
     //create texture (gpu)
-    glCreateTextures(GL_TEXTURE_2D, 1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    std::cout << "Bound texture " << filename << " to ID #" << textureID << "." << std::endl;
     
     //load image data (gpu)
     glTexImage2D(
         GL_TEXTURE_2D,      // target
         0,                  // mipmap level
-        GL_RGBA,            // internal format
+        format,            // internal format
         width,
         height,
         0,                  // border
-        GL_RGBA,            // format
+        format,            // format
         GL_UNSIGNED_BYTE,   // type
-        data                
+        data                // dahhh
     );
 
     //free data (cpu)
@@ -42,16 +56,20 @@ Material::Material(const char *filename)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+    //    glGenerateMipmap(GL_TEXTURE_2D);
+    glGenerateTextureMipmap(textureID);
+
 
 }
 
 Material::~Material()
 {
-    glDeleteTextures(1, &texture);
+    glDeleteTextures(1, &textureID);
 }
 
-void Material::use(int index)
+void Material::Use()
 {
-    glActiveTexture(GL_TEXTURE0 + index);
-    glBindTexture(GL_TEXTURE_2D, texture);
+  //glActiveTexture(GL_TEXTURE0 + index);
+  glActiveTexture(GL_TEXTURE0 + (textureID - 1));
+  glBindTexture(GL_TEXTURE_2D, textureID);
 }
