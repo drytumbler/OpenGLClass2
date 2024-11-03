@@ -5,7 +5,7 @@
 
 * Hi!
 
-This is my progress learning basic C++ and GLSL. Examples comming soon!
+This is my progress learning basic C++ and GLSL. Examples coming soon!
 
 * Usage:
 
