@@ -61,24 +61,21 @@ int main()
   VBOs.push_back(vbo);
 
   
-  TriangleMesh* triangle = new TriangleMesh(VBOs, ibo); // it's a square!
-  triangle->Report();
+  TriangleMesh* triangle = new TriangleMesh(VBOs, ibo);
   
   Material* material = new Material("../src/textures/lenna.png");
-
   Material* mask = new Material("../src/textures/mask.png");
-
   Material* sandstone = new Material("../src/textures/sandstone.png");
   
   
   //setup shaders
   Shader shader(
-		"../src/shaders/vertex.shader",
-		"../src/shaders/fragment.shader"
+		"../src/shaders/disp_tex.vert",
+		"../src/shaders/disp_tex.frag"
 		);
   
   //bind the shader
-  //glUseProgram(shader.ID); //always load shader before applying further changes
+  //always load shader before applying further changes
   shader.Activate();
   //setup texture uniforms
   glUniform1i(glGetUniformLocation(shader.ID, "material"), 0);
@@ -86,24 +83,22 @@ int main()
   glUniform1i(glGetUniformLocation(shader.ID, "sandstone"), 2);
   
   
-
-  //Camera camera(width, height, glm::vec3(-0.25f, 0.0f, 2.22f));
-  
   //setup blending options
-  glEnable(GL_DEPTH_TEST);
   glEnable(GL_BLEND);
   glBlendFunc(GL_ONE, GL_ZERO);
+  //enable depth testing
+  glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
   glDepthRange(0.1f, 100.0f);
-
+  //enable multisampling (needs GLFW setup, see below main())
   glEnable(GL_MULTISAMPLE);
 
  
   // uniforms
-  float time=0.0f, scale=1.0f;
-  GLuint u_Time, u_Scale;
+  float time=0.0f;
+  GLuint u_Time;
   u_Time = glGetUniformLocation(shader.ID, "time");
-  u_Scale = glGetUniformLocation(shader.ID, "scale");
+
   
   // Game loop
   while (!glfwWindowShouldClose(window))
@@ -112,7 +107,7 @@ int main()
       glfwPollEvents();
        
       time = (float)glfwGetTime();
-      scale = sin(time);
+
   
       glClearColor(0.019f, 0.0185f, 0.0165f, 1.0f);
 
@@ -122,7 +117,6 @@ int main()
       shader.Activate();
       
       // Update uniforms
-      glUniform1f(u_Scale, scale);
       glUniform1f(u_Time, time);
 
       //setup MVP
@@ -130,22 +124,20 @@ int main()
       glm::mat4 view = glm::mat4(1.0f);
       glm::mat4 proj = glm::mat4(1.0f);
       
-      view = glm::translate(view, glm::vec3(0.0f, 0.0f, -1.0f));
+      view = glm::translate(view, glm::vec3(0.0f, 0.0f, 1.0f));
       proj = glm::perspective(PI / 2.0f, 1.0f * width / height, 0.1f, 100.0f);
 
-      //      model = glm::rotate(model, 0.08f * PI * time, glm::vec3(0.0,1.0,0.0));
+      //model = glm::rotate(model, 1.0f, glm::vec3(0.0,1.0,0.0));
       
-
       unsigned int u_Model = glGetUniformLocation(shader.ID, "model");
       unsigned int u_View  = glGetUniformLocation(shader.ID, "view");
       unsigned int u_Projection = glGetUniformLocation(shader.ID, "proj");
 
-      
-      glm::vec3 cameraPosition = {0.0, 0.0, 0.0};
-      glm::vec3 cameraTarget = {0.0, 0.0, 0.0};
+      glm::vec3 cameraPosition = {0.0f, 0.0f, -1.0f};
+      glm::vec3 cameraTarget = {0.0f, 0.0f, 0.0f};
       glm::vec3 up = {0.0f, 1.0f, 0.0f};
 
-      //view = glm::lookAt(cameraPosition, cameraTarget, up);
+      view = glm::lookAt(cameraPosition, cameraTarget, up);
 
       glUniformMatrix4fv(u_Model, 1, GL_FALSE, glm::value_ptr(model));
       glUniformMatrix4fv(u_View, 1, GL_FALSE, glm::value_ptr(view));

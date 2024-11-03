@@ -1,0 +1,46 @@
+#+TITLE: OpenGLCLass2
+#+SUBTITLE: My progression and excercises
+#+AUTHOR: R.U.
+#+DATE: 2024-11-03
+
+* Hi!
+
+This is my progress learning basic C++ and GLSL. Examples comming soon!
+
+* Usage:
+
+** CMakeLists.txt
+#+begin_src cmake
+  # ~/OpenGLClass2/CMakeLists.txt
+  cmake_minimum_required(VERSION 3.5)
+  project(my_cmake_project VERSION 0.1.1)
+
+  find_package(OpenGL REQUIRED)
+  add_executable(
+      my_cmake_project
+      src/config.cpp # for stb implementation
+      src/main.cpp # generates a window and OpenGL context
+      src/glad.c # single file OpenGL library
+      src/TriangleMesh.cpp # mesh-object class
+      src/Material.cpp # texture class
+      src/Shader.cpp # shaderprogram class
+      src/IBO.cpp # Index/Element buffer object class
+      src/VBO.cpp # Vertex buffer object class
+      src/VAO.cpp # Vertex attributes object class
+      src/Camera.cpp # Camera class
+  )
+
+  target_include_directories(my_cmake_project PRIVATE include)
+  target_link_libraries(my_cmake_project glfw OpenGL::GL)
+  # EOF
+#+end_src
+
+** Compiling:
+First cd into the /src directory!
+#+begin_src 
+cd ~/OpenGLClass2/src
+#+end_src
+From the /src directory, run this command. Compiling from the base directory will not work for now.
+#+begin_src
+cmake -S .. -B ../build -DCMAKE_BUILD_TYPE=Debug && cmake --build ../build
+#+end_src

@@ -128,7 +128,7 @@ int main()
       view = glm::translate(view, glm::vec3(0.0f, 0.0f, 1.0f));
       proj = glm::perspective(PI / 2.0f, 1.0f * width / height, 0.1f, 100.0f);
 
-      model = glm::rotate(model, 0.08f * PI * time, glm::vec3(0.0,1.0,0.0));
+      //model = glm::rotate(model, 0.08f * PI * time, glm::vec3(0.0,1.0,0.0));
       
 
       unsigned int u_Model = glGetUniformLocation(shader.ID, "model");
