@@ -157,7 +157,7 @@ int main()
       sandstone->Use();
       
       triangle->draw();
-
+      shader.Refresh(window);
       // Swap the screen buffers
       glfwSwapBuffers(window);
     }

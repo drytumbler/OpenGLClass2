@@ -1,9 +1,6 @@
 // TriangleMesh.cpp
 
 #include "TriangleMesh.h"
-#include "VBO.h"
-#include <iostream>
-#include <linux/limits.h>
 
 TriangleMesh::TriangleMesh(std::vector<VBO*>& vbos, IBO* ibop) : VBOs(vbos), ibo(ibop){
     

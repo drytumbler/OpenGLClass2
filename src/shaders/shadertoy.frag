@@ -29,7 +29,7 @@ void main(){
     vec2 uv = fragmentTexCoord;
 
     // Time varying pixel color
-    vec3 col = abs(vec3(sin(time) * uv.x, cos(time) * uv.y, normalize(0.5 + uv.x)));
+    vec3 col = vec3(-1.0f) + abs(vec3(2.5 * sin(time) * uv.x, 2.5 * cos(time) * uv.y, normalize(0.5 + uv.x)));
 
    screenColor = vec4(col, (1.0 - alpha)*(0.75-alpha));
    

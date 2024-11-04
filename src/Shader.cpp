@@ -37,7 +37,9 @@ unsigned int makeShaderMod(const std::string& filepath, unsigned int shader_type
     return shaderModule;
 }
 
-Shader::Shader(const std::string& vertex_filepath, const std::string& fragment_filepath){
+Shader::Shader(const std::string &vertex_filepath,
+               const std::string &fragment_filepath)
+  : vertexPath(vertex_filepath), fragmentPath(fragment_filepath) {
     std::vector<unsigned int> modules;
     modules.push_back(makeShaderMod(vertex_filepath, GL_VERTEX_SHADER));
     modules.push_back(makeShaderMod(fragment_filepath, GL_FRAGMENT_SHADER));
@@ -82,5 +84,41 @@ void Shader::CompileErrors(unsigned int shader, const char *type) {
       glGetProgramInfoLog(shader, 1024, NULL, infoLog);
       std::cout << "Shader linking error for: " << type << "\n" << std::endl;
     }
+  }
+}
+
+
+void Shader::Refresh(GLFWwindow* window) {
+
+  if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+
+    glDeleteShader(ID);
+    
+    std::cout << "refreshing.." << std::endl;
+
+    std::vector<unsigned int> modules;
+    modules.push_back(makeShaderMod(vertexPath, GL_VERTEX_SHADER));
+    modules.push_back(makeShaderMod(fragmentPath, GL_FRAGMENT_SHADER));
+
+    ID = glCreateProgram();
+    for (unsigned int shaderModule : modules){
+      glAttachShader(ID, shaderModule);
+    }
+    glLinkProgram(ID);
+    
+    //error handling
+    int succes;
+    glGetProgramiv(ID, GL_LINK_STATUS, &succes);
+    if(succes == GL_FALSE){
+      char errorLog[1024];
+      glGetProgramInfoLog(ID, 1024, NULL, errorLog);
+      std::cout << "Shader Program Linking Error:\n" <<errorLog << std::endl;
+    }
+    //clean up
+    for (unsigned int shaderModule : modules){
+      glDeleteShader(shaderModule);
+    }
+
+    glUseProgram(ID);
   }
 }
