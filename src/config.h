@@ -27,7 +27,7 @@ unsigned int makeShaderMod(const std::string& filepath, unsigned int shader_type
 unsigned int makeShaderProg(const std::string& vertex_filepath, const std::string& fragment_filepath);
 
 // Window dimensions
-const GLuint WIDTH = 600, HEIGHT = 600;
+const GLuint WIDTH = 400, HEIGHT = 300;
 
 //constants
 #define PI (float)3.14159627

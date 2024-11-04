@@ -44,3 +44,9 @@ From the /src directory, run this command. Compiling from the base directory wil
 #+begin_src
 cmake -S .. -B ../build -DCMAKE_BUILD_TYPE=Debug && cmake --build ../build
 #+end_src
+
+** Your name is Sam?
+Go to Victor Gordan's open-gl tutorial for Visual Studio configuration and Windows libraries:
+
+https://github.com/VictorGordan/opengl-tutorials/tree/main/YoutubeOpenGL%201%20-%20Create%20Window
+

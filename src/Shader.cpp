@@ -92,7 +92,7 @@ void Shader::Refresh(GLFWwindow* window) {
 
   if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
 
-    glDeleteShader(ID);
+    glDeleteProgram(ID);
     
     std::cout << "refreshing.." << std::endl;
 

@@ -20,10 +20,10 @@ int main()
   std::cout << "Size of int: " << sizeof(int) << " bytes\n";
   
   const std::vector<float> vertices = {
-    -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, -1.0f, 
-    1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, -1.0f, 
+    -1.0, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 
+    1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 
     1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 
-    -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, 
+    -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 
   };
 
   const std::vector<GLuint> indices = {
@@ -34,7 +34,7 @@ int main()
   GLFWwindow *window = createWindow();
   
   // Set the clear color
-  glClearColor(0.19f, 0.185f, 0.165f, 1.0f);
+  glClearColor(0.719f, 0.185f, 0.165f, 1.0f);
   
   // Setup viewport
   int width, height;
@@ -79,9 +79,7 @@ int main()
   
   shader.Activate();
   //setup texture uniforms
-  glUniform1i(glGetUniformLocation(shader.ID, "material"), 0);
-  glUniform1i(glGetUniformLocation(shader.ID, "mask"), 1);
-  glUniform1i(glGetUniformLocation(shader.ID, "sandstone"), 2);
+
   
     
   //setup blending options
@@ -99,8 +97,9 @@ int main()
  
   // uniforms
   float time=0.0f;
-  GLuint u_Time;
-  u_Time = glGetUniformLocation(shader.ID, "time");
+  glm::vec2 res(1.0f * width, 1.0f * height);
+  
+  GLuint u_Time, u_Resolution;
   
   // Game loop
   while (!glfwWindowShouldClose(window))
@@ -119,6 +118,7 @@ int main()
       
       // Update uniforms
       glUniform1f(u_Time, time);
+      glUniform2fv(u_Resolution, 1, &res[0]);
 
       //setup MVP
       glm::mat4 model = glm::mat4(1.0f);
@@ -126,7 +126,8 @@ int main()
       glm::mat4 proj = glm::mat4(1.0f);
       
       view = glm::translate(view, glm::vec3(0.0f, 0.0f, 1.0f));
-      proj = glm::perspective(PI / 2.0f, 1.0f * width / height, 0.1f, 100.0f);
+      proj = glm::perspective(PI / 2.0f, 1.0f, 0.1f, 100.0f);
+      //proj = glm::ortho(-1.0f, 1.0f, -1.0f / (width / (float)height), 1.0f / (width / (float)height), 0.1f, 100.0f);
 
       //model = glm::rotate(model, 0.08f * PI * time, glm::vec3(0.0,1.0,0.0));
       
@@ -134,6 +135,13 @@ int main()
       unsigned int u_Model = glGetUniformLocation(shader.ID, "model");
       unsigned int u_View  = glGetUniformLocation(shader.ID, "view");
       unsigned int u_Projection = glGetUniformLocation(shader.ID, "proj");
+
+      u_Time = glGetUniformLocation(shader.ID, "time");
+      u_Resolution = glGetUniformLocation(shader.ID, "res");
+
+      glUniform1i(glGetUniformLocation(shader.ID, "material"), 0);
+      glUniform1i(glGetUniformLocation(shader.ID, "mask"), 1);
+      glUniform1i(glGetUniformLocation(shader.ID, "sandstone"), 2);
 
       
       glm::vec3 cameraPosition = {0.0, 0.0, -1.0};
@@ -152,9 +160,9 @@ int main()
       //camera.Update(PI / 2.0f, 0.0f, 10.0f, shader, "camMatrix");
       
       // Draw the triangle
+      sandstone->Use();
       material->Use();
       mask->Use();
-      sandstone->Use();
       
       triangle->draw();
       shader.Refresh(window);
@@ -212,7 +220,7 @@ void setupGLFW()
 GLFWwindow *createWindow()
 {
   // Create a GLFWwindow object that we can use for GLFW's functions
-  GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", NULL, NULL);
+  GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "shaderToy", NULL, NULL);
 
   if (window == NULL)
     {
@@ -238,7 +246,7 @@ GLFWwindow *createWindow()
     }
 
   // Define the viewport dimensions
-
+  
   glViewport(0, 0, WIDTH, HEIGHT);
   return window;
 }
