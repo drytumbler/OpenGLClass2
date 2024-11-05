@@ -10,6 +10,7 @@ This is my progress learning basic C++ and GLSL. Examples coming soon!
 * Usage:
 
 ** CMakeLists.txt
+a basic CMake file:
 #+begin_src cmake
   # ~/OpenGLClass2/CMakeLists.txt
   cmake_minimum_required(VERSION 3.5)

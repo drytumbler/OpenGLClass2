@@ -12,7 +12,10 @@
 #include "Camera.h"
 //#include "math.h"
 
-#define abs(X) ((X<0)?-X:X)
+//#define abs(X) ((X < 0) ? -X : X)
+
+#define WIDTH 400
+#define HEIGHT 300
 
 int main()
 {
