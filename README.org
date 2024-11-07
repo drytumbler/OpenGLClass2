@@ -7,6 +7,7 @@
 
 This is my progress learning basic C++ and GLSL. Examples coming soon!
 Adding nfd (nativefiledialog) to load shaders from within the app.
+Also adding screenshots and ImGui implementation.
 Still needs lots of development and already has a lot of cleanup to be done. Currently I'm using this tutorial: https://github.com/VictorGordan/opengl-tutorials/tree/main/YoutubeOpenGL%201%20-%20Create%20Window
 
 * Usage:
