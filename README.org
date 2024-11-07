@@ -6,9 +6,15 @@
 * Hi!
 
 This is my progress learning basic C++ and GLSL. Examples coming soon!
+Adding nfd (nativefiledialog) to load shaders from within the app.
+Still needs lots of development and already has a lot of cleanup to be done. Currently I'm using this tutorial: https://github.com/VictorGordan/opengl-tutorials/tree/main/YoutubeOpenGL%201%20-%20Create%20Window
 
 * Usage:
+ - disp_tex.cpp - render a texture on screen
+ - pyramid_ex.cpp - render a textured mesh with diffused lighting
+ - shaderToy.cpp - a shadertoy-like app that uses just a fragment shader for rendering (press r to refresh the shader)
 
+   Run the compiled program from the build directory. Store shaders and textures in the src/shaders and src/textures directory.  
 ** CMakeLists.txt
 a basic CMake file:
 #+begin_src cmake
@@ -37,6 +43,10 @@ a basic CMake file:
 #+end_src
 
 ** Compiling:
+Clone the repo.
+#+begin_src 
+git clone https://github.com/drytumbler/OpenGLClass2.git
+#+end_src
 First cd into the /src directory!
 #+begin_src 
 cd ~/OpenGLClass2/src
@@ -46,8 +56,93 @@ From the /src directory, run this command. Compiling from the base directory wil
 cmake -S .. -B ../build -DCMAKE_BUILD_TYPE=Debug && cmake --build ../build
 #+end_src
 
-** Your name is Sam?
-Go to Victor Gordan's open-gl tutorial for Visual Studio configuration and Windows libraries:
-
-https://github.com/VictorGordan/opengl-tutorials/tree/main/YoutubeOpenGL%201%20-%20Create%20Window
-
+* Changelog :exclude:
+├── include
+│   ├── glad
+│   │   └── glad.h
+│   ├── imgui
+│   │   ├── imconfig.h
+│   │   ├── imgui.cpp
+│   │   ├── imgui_demo.cpp
+│   │   ├── imgui_draw.cpp
+│   │   ├── imgui.h
+│   │   ├── imgui_impl_glfw.cpp
+│   │   ├── imgui_impl_glfw.h
+│   │   ├── imgui_impl_opengl3.cpp
+│   │   ├── imgui_impl_opengl3.h
+│   │   ├── imgui_impl_opengl3_loader.h
+│   │   ├── imgui_internal.h
+│   │   ├── imgui_tables.cpp
+│   │   ├── imgui_widgets.cpp
+│   │   ├── imstb_rectpack.h
+│   │   ├── imstb_textedit.h
+│   │   └── imstb_truetype.h
+│   ├── KHR
+│   │   └── khrplatform.h
+│   ├── nfd
+│   │   └── nfd.h
+│   ├── stb
+│   │   └── stb_image.h
+│   └── stb_image.h
+├── lib
+│   └── libnfd.a
+├── src
+│   ├── ex
+│   │   ├── camera.cpp
+│   │   ├── displ_tex.cpp
+│   │   ├── piramid.cpp
+│   │   └── shaderToy.cpp
+│   ├── shaders
+│   │   ├── old
+│   │   │   ├── fragment.shader
+│   │   │   └── vertex.shader
+│   │   ├── toy
+│   │   │   ├── circles2.frag
+│   │   │   ├── lines2d.frag
+│   │   │   ├── raytracer.frag
+│   │   │   └── shroom.frag
+│   │   ├── default.frag
+│   │   ├── default.vert
+│   │   ├── disp_tex.frag
+│   │   ├── disp_tex.vert
+│   │   ├── fragment.shader
+│   │   ├── light.frag
+│   │   ├── light.vert
+│   │   ├── shadertoy.frag
+│   │   ├── shadertoy.vert
+│   │   └── vertex.shader
+│   ├── textures
+│   │   ├── lenna.png
+│   │   ├── mask.png
+│   │   ├── moon.jpg
+│   │   ├── moon.png
+│   │   ├── sandstone.jpg
+│   │   └── sandstone.png
+│   ├── Camera.cpp
+│   ├── Camera.h
+│   ├── config.cpp
+│   ├── config.h
+│   ├── disp_tex.cpp
+│   ├── glad.c
+│   ├── IBO.cpp
+│   ├── IBO.h
+│   ├── main.cpp
+│   ├── Material.cpp
+│   ├── Material.h
+│   ├── math.cpp
+│   ├── math.h
+│   ├── pyramid_ex.cpp
+│   ├── Shader.cpp
+│   ├── Shader.h
+│   ├── shaderToy.cpp
+│   ├── sphere
+│   ├── Sphere.cpp
+│   ├── Sphere.h
+│   ├── TriangleMesh.cpp
+│   ├── TriangleMesh.h
+│   ├── VAO.cpp
+│   ├── VAO.h
+│   ├── VBO.cpp
+│   └── VBO.h
+├── CMakeLists.txt
+└── README.org
