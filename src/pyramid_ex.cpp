@@ -129,10 +129,10 @@ int main()
   };
   
   VBO* vbo = new VBO(vertices, attributes);
-  IBO* ibo = new IBO(indices, indices.size());
+  IBO* ibo = new IBO(indices);
   
   VBO* lightVBO = new VBO(lightVertices, lightAttributes);
-  IBO* lightIBO = new IBO(lightIndices, lightIndices.size());
+  IBO* lightIBO = new IBO(lightIndices);
   
   
   std::vector<VBO*> VBOs;

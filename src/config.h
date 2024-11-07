@@ -25,7 +25,7 @@ void setupGLFW();
 GLFWwindow *createWindow();
 unsigned int makeShaderMod(const std::string& filepath, unsigned int shader_type);
 unsigned int makeShaderProg(const std::string& vertex_filepath, const std::string& fragment_filepath);
-
+void saveScreenshotToFile(std::string filename, int windowWidth, int windowHeight);
 // Window dimensions
 const GLuint WIDTH = 1200, HEIGHT = 900;
 

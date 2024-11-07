@@ -2,7 +2,7 @@
 
 #include "IBO.h"
 
-IBO::IBO(const std::vector<GLuint> data, const unsigned int amount) : indices(data), size(amount) {
+IBO::IBO(const std::vector<GLuint> data) : indices(data), size(data.size()) {
   glGenBuffers(1, &ID);
 
   if (ID == 0) {

@@ -17,24 +17,113 @@
 #define WIDTH 400
 #define HEIGHT 300
 
+#include "../include/imgui/imgui.h"
+#include "../include/imgui/imgui_impl_glfw.h"
+#include "../include/imgui/imgui_impl_opengl3.h"
+#include "../include/nfd/nfd.h"
+
+//#define GL_SILENCE_DEPRECATION
+bool uiOn = false;
+bool uiRequestExit = false;
+
+static void ShowOptionsMenu()
+{
+  //IMGUI_DEMO_MARKER("Examples/Menu");
+    ImGui::MenuItem("(demo menu)", NULL, false, false);
+    if (ImGui::MenuItem("New")) {}
+    if (ImGui::MenuItem("Open", "Ctrl+O")) {}
+    if (ImGui::BeginMenu("Open Recent"))
+    {
+        if (ImGui::BeginMenu("More.."))
+        {
+
+            if (ImGui::BeginMenu("Recurse.."))
+            {
+                ShowOptionsMenu();
+                ImGui::EndMenu();
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenu();
+    }
+    if (ImGui::MenuItem("Save", "Ctrl+S")) {}
+    if (ImGui::MenuItem("Save As..")) {}
+
+    ImGui::Separator();
+    //IMGUI_DEMO_MARKER("Examples/Menu/Options");
+    if (ImGui::BeginMenu("Options"))
+    {
+        static bool enabled = true;
+        ImGui::MenuItem("Enabled", "", &enabled);
+        ImGui::BeginChild("child", ImVec2(0, 60), ImGuiChildFlags_Borders);
+        for (int i = 0; i < 10; i++)
+            ImGui::Text("Scrolling Text %d", i);
+        ImGui::EndChild();
+        static float f = 0.5f;
+        static int n = 0;
+        ImGui::SliderFloat("Value", &f, 0.0f, 1.0f);
+        ImGui::InputFloat("Input", &f, 0.1f);
+        ImGui::Combo("Combo", &n, "Yes\0No\0Maybe\0\0");
+        ImGui::EndMenu();
+    }
+
+    //IMGUI_DEMO_MARKER("Examples/Menu/Colors");
+    if (ImGui::BeginMenu("Colors"))
+    {
+        float sz = ImGui::GetTextLineHeight();
+        for (int i = 0; i < ImGuiCol_COUNT; i++)
+        {
+            const char* name = ImGui::GetStyleColorName((ImGuiCol)i);
+            ImVec2 p = ImGui::GetCursorScreenPos();
+            ImGui::GetWindowDrawList()->AddRectFilled(p, ImVec2(p.x + sz, p.y + sz), ImGui::GetColorU32((ImGuiCol)i));
+            ImGui::Dummy(ImVec2(sz, sz));
+            ImGui::SameLine();
+            ImGui::MenuItem(name);
+        }
+        ImGui::EndMenu();
+    }
+
+    // Here we demonstrate appending again to the "Options" menu (which we already created above)
+    // Of course in this demo it is a little bit silly that this function calls BeginMenu("Options") twice.
+    // In a real code-base using it would make senses to use this feature from very different code locations.
+    if (ImGui::BeginMenu("Options")) // <-- Append!
+    {
+      //IMGUI_DEMO_MARKER("Examples/Menu/Append to an existing menu");
+        static bool b = true;
+        ImGui::Checkbox("SomeOption", &b);
+        ImGui::EndMenu();
+    }
+
+    if (ImGui::BeginMenu("Disabled", false)) // Disabled
+    {
+        IM_ASSERT(0);
+    }
+    if (ImGui::MenuItem("Checked", NULL, true)) {}
+    ImGui::Separator();
+    if (ImGui::MenuItem("Quit", "Alt+F4")) { uiRequestExit=true; }
+}
 int main()
 {
-  std::cout << "Size of float: " << sizeof(float) << " bytes\n";
-  std::cout << "Size of int: " << sizeof(int) << " bytes\n";
-  
-  const std::vector<float> vertices = {
-    -1.0, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 
-    1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 
-    1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 
-    -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 
-  };
-
-  const std::vector<GLuint> indices = {
-    0, 1, 2, 0, 2, 3
-  };
-  
   setupGLFW();
   GLFWwindow *window = createWindow();
+
+  const char* glsl_version = "#version 130";
+
+  // Setup Dear ImGui context
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGuiIO& io = ImGui::GetIO(); (void)io;
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+  
+  // Setup Dear ImGui style
+  ImGui::StyleColorsDark();
+  //ImGui::StyleColorsLight();
+  
+  // Setup Platform/Renderer backends
+  ImGui_ImplGlfw_InitForOpenGL(window, true);
+  ImGui_ImplOpenGL3_Init(glsl_version);
+  
   
   // Set the clear color
   glClearColor(0.719f, 0.185f, 0.165f, 1.0f);
@@ -42,27 +131,39 @@ int main()
   // Setup viewport
   int width, height;
   glfwGetFramebufferSize(window, &width, &height);
-
+  
   // Stuff
   GLint maxVertices, maxIndices;
   glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &maxVertices);
   glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &maxIndices);
   std::cout << "Max vertices: " << maxVertices << ", Max indices: " << maxIndices << std::endl;
 
+  // Canvas setup 
+  const std::vector<float> vertices = {
+    -1.0, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 
+    1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 
+    1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 
+    -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 
+  };
+  
+  const std::vector<GLuint> indices = {
+    0, 1, 2, 0, 2, 3
+  };
+  
+  // Vertex Attributes
   std::vector<VertexAttribute> attributes = {
     VertexAttribute(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0, false),
     VertexAttribute(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)), false),
     VertexAttribute(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (6 * sizeof(float)), false)
   };
   
+  // Create buffers
   VBO* vbo = new VBO(vertices, attributes);
-  IBO* ibo = new IBO(indices, indices.size());
-
-
-  
+  IBO* ibo = new IBO(indices);
+  // Gather VBOs (if more then one)
   std::vector<VBO*> VBOs;
   VBOs.push_back(vbo);
-
+  
   
   TriangleMesh* triangle = new TriangleMesh(VBOs, ibo); // it's a square!
   triangle->Report();
@@ -70,6 +171,7 @@ int main()
   Material* material = new Material("../src/textures/lenna.png");
   Material* mask = new Material("../src/textures/mask.png");
   Material* sandstone = new Material("../src/textures/sandstone.png");
+  Material* moon = new Material("../src/textures/moon.png");
   
   // TODO -> check filename
   //setup shaders
@@ -80,8 +182,8 @@ int main()
   
   //bind the shader
   
-  shader.Activate();
-  //setup texture uniforms
+  //shader.Activate();
+  //setup texture uniforms - moved to while loop
 
   
     
@@ -105,14 +207,49 @@ int main()
   GLuint u_Time, u_Resolution;
   
   // Game loop
-  while (!glfwWindowShouldClose(window))
+  while (!glfwWindowShouldClose(window) && !uiRequestExit)
     {
-      // Check if any events have been activated (key pressed, mouse moved etc.) and call corresponding response functions
+      glViewport(0, 0, width, height);
       glfwPollEvents();
+      // Start the Dear ImGui frame
+      ImGui_ImplOpenGL3_NewFrame();
+      ImGui_ImplGlfw_NewFrame();
+
+ ImGui::NewFrame();
+ if (ImGui::BeginMainMenuBar()){
+         if (ImGui::BeginMenu("Options"))
+        {
+            ShowOptionsMenu();
+            ImGui::EndMenu();
+        }
+        
+        ImGui::EndMainMenuBar();
+ }
+      if(uiOn){
+      
+       ImGui::Begin("shaderToy.cpp");
+       if (ImGui::Button("choose", ImVec2(50.,18.))){
+	 nfdchar_t *outPath = NULL;
+	 nfdresult_t result = NFD_OpenDialog( NULL, "../src/shaders/", &outPath);
+	 if ( result == NFD_OKAY ) {
+	   puts("Success!");
+	   puts(outPath);
+	   free(outPath);
+	 }
+	 else if ( result == NFD_CANCEL ) {
+	   puts("User pressed cancel.");
+	 }
+	 else {
+	   printf("Error: %s\n", NFD_GetError() );
+	 }
+       }
+       ImGui::End();
+      }
+      // Check if any events have been activated (key pressed, mouse moved etc.) and call corresponding response functions
       glClearColor(0.019f, 0.0185f, 0.0165f, 1.0f);
       time = (float)glfwGetTime();
        
-  
+      
 
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -145,6 +282,7 @@ int main()
       glUniform1i(glGetUniformLocation(shader.ID, "material"), 0);
       glUniform1i(glGetUniformLocation(shader.ID, "mask"), 1);
       glUniform1i(glGetUniformLocation(shader.ID, "sandstone"), 2);
+      glUniform1i(glGetUniformLocation(shader.ID, "moon"), 3);
 
       
       glm::vec3 cameraPosition = {0.0, 0.0, -1.0};
@@ -165,10 +303,15 @@ int main()
       // Draw the triangle
       sandstone->Use();
       material->Use();
+      moon->Use();
       mask->Use();
       
       triangle->draw();
       shader.Refresh(window);
+
+      ImGui::Render();
+      ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+      
       // Swap the screen buffers
       glfwSwapBuffers(window);
     }
@@ -180,7 +323,12 @@ int main()
   delete mask;
   delete vbo;
     
-  // Terminates GLFW, clearing any resources allocated by GLFW.
+  // Terminate GLFW and ImGui
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
+  
+  glfwDestroyWindow(window);
   glfwTerminate();
   return 0;
 }
@@ -190,6 +338,9 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 {
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     glfwSetWindowShouldClose(window, GL_TRUE);
+
+  if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE)
+    uiOn = !uiOn;
 }
 
 // Mouse position callback function
@@ -201,8 +352,10 @@ void mousePositionCallback(GLFWwindow* window, double xpos, double ypos) {
 void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
   if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
     std::cout << "Left Mouse Button Pressed\n";
-  else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
+  else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE){
     std::cout << "Left Mouse Button Released\n";
+    saveScreenshotToFile("scrn.tga", WIDTH, HEIGHT);
+    }
 }
 
 
@@ -252,4 +405,22 @@ GLFWwindow *createWindow()
   
   glViewport(0, 0, WIDTH, HEIGHT);
   return window;
+}
+
+void saveScreenshotToFile(std::string filename, int windowWidth, int windowHeight) {    
+    const int numberOfPixels = windowWidth * windowHeight * 3;
+    unsigned char pixels[numberOfPixels];
+
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glReadBuffer(GL_FRONT);
+    glReadPixels(0, 0, windowWidth, windowHeight, GL_BGR, GL_UNSIGNED_BYTE, pixels);
+
+    FILE *outputFile = fopen(filename.c_str(), "w");
+    short header[] = {0, 2, 0, 0, 0, 0, (short) windowWidth, (short) windowHeight, 24};
+
+    fwrite(&header, sizeof(header), 1, outputFile);
+    fwrite(pixels, numberOfPixels, 1, outputFile);
+    fclose(outputFile);
+
+    printf("Finish writing to file.\n");
 }

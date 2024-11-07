@@ -11,7 +11,7 @@ class IBO {
   GLuint ID;
   std::vector<GLuint> indices;
   GLsizeiptr size;
-  IBO(const std::vector<GLuint> data, const unsigned int amount);
+  IBO(const std::vector<GLuint> data);
 
   void Bind();
   void Unbind();

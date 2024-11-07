@@ -53,7 +53,7 @@ int main()
   };
   
   VBO* vbo = new VBO(vertices, attributes);
-  IBO* ibo = new IBO(indices, indices.size());
+  IBO* ibo = new IBO(indices);
 
 
   
