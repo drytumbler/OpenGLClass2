@@ -1,5 +1,4 @@
 #include "Material.h"
-#include "../include/stb_image.h"
 
 Material::Material(const char *filename)
 {
@@ -31,8 +30,9 @@ Material::Material(const char *filename)
     //create texture (gpu)
     glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
+    #ifdef DEBUG_ENABLED
     std::cout << "Bound texture " << filename << " to ID #" << textureID << "." << std::endl;
-    
+    #endif
     //load image data (gpu)
     glTexImage2D(
         GL_TEXTURE_2D,      // target
@@ -59,6 +59,7 @@ Material::Material(const char *filename)
     //    glGenerateMipmap(GL_TEXTURE_2D);
     glGenerateTextureMipmap(textureID);
 
+    State::GetInstance().Add(this);
 
 }
 
@@ -70,6 +71,6 @@ Material::~Material()
 void Material::Use()
 {
   //glActiveTexture(GL_TEXTURE0 + index);
-  glActiveTexture(GL_TEXTURE0 + (textureID - 1));
+  glActiveTexture(GL_TEXTURE0 + (textureID - 1)); // TODO
   glBindTexture(GL_TEXTURE_2D, textureID);
 }

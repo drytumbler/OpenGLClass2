@@ -17,6 +17,8 @@ VBO::VBO(const std::vector<float> data, const std::vector<VertexAttribute> layou
 	       vertices.size() * sizeof(float),
 	       vertices.data(),
 	       GL_STATIC_DRAW);
+  
+  State::GetInstance().Add(this);
 }
 
 

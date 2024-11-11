@@ -1,5 +1,4 @@
 #version 330 core
-
 #define  red		vec3(1.0, 0.0, 0.0)
 #define  green		vec3(0.17, 1.0, 0.2)
 #define  blue  	       	vec3(0.0, 0.0, 1.0)
@@ -10,14 +9,15 @@
 #define  black		vec3( 0.0, 0.0, 0.0 )
 
 #define SHARPNESS 0.005
-#define ITERATIONS 64
+#define ITERATIONS 16
 #define MIN_DIST 0.005
 #define MAX_DIST 128.0
+#define MAX_SHADOW_DIST 50.0
 
+#define UP             vec3( 0.0, 1.0, 0.0 ) 
 
 in vec3 fragmentColor;
 in vec2 fragmentTexCoord;
-
 
 uniform sampler2D material;
 uniform sampler2D mask;
@@ -27,6 +27,12 @@ uniform sampler2D moon;
 uniform float time;
 uniform vec2 res;
 
+uniform vec3 ro;
+uniform vec3 rd;
+uniform vec3 ri;
+
+uniform vec4 primate;
+uniform vec4 orb;
 
 float sdPlane( vec3 p, vec3 n, float h )
 {
@@ -73,6 +79,7 @@ float circle (vec2 uv, vec2 p, float r, float blur){
   return smoothstep( r + blur, r - blur, d );
 }
 
+
 float toline(vec3 ro, vec3 rd, vec3 p){
   return length( cross( p - ro, rd ) ) / length( rd );
 }
@@ -92,16 +99,36 @@ vec3 flip (vec3 p ) {
 }
 vec2 map( vec3 p ){
   vec2 result = vec2( 0.0 );
+  
   vec3 spherePos = vec3( 1.77 * sin( time * 0.5 + 0.5), 0.0, 0.0 );
   spherePos = flip(spherePos);
   float c = sdSphere(p*vec3(1.3,1.0,1.4), spherePos, 0.35 + (0.1 * (1.0 + sin(time))));
+
 
   vec3 boxDim = vec3(0.65);
   float b = sdBox(p, boxDim); 
 
   float v = sdPlane(p, vec3(0., 1., 0.), .5);
 
+  float v2 = sdPlane(vec3(p.x, p.y, p.z), vec3(0., -1., 0.), 50.5);
+  
+
+  vec3 lhandPos = ro + rd * .5 + ri * .3 - UP * .25;
+  vec3 rhandPos = ro + rd * .5 - ri * .3 - UP * .25;
+  float lh = sdSphere(p, lhandPos, .1);
+  float rh = sdSphere(p, rhandPos, .1);
+
+  float prim = sdSphere(p , primate.xyz, primate.w);
+  float orq = sdSphere(p, orb.xyz, orb.w);
+  
   result.x = min(smin(.7 * c, b, 1.05), v );
+  result.x = min(smin(.7 * c, b, 1.05), v );
+  result.x = min(result.x, v2);
+  result.x = min(result.x, lh);
+  result.x = min(result.x, rh);
+  result.x = min(result.x, orq);
+  if (result.x > prim) result.y = 5.;
+  result.x = min(result.x, prim);
   return result;
   //return sphere;
 }
@@ -133,7 +160,7 @@ float dlight ( vec3 pos, vec3 posl ){
   vec3 nor = calcNormal( pos );
   float dif = clamp( dot( nor, l ), 0.0, 1.0 );
   vec2 d = ray( pos + nor * 0.07, l );
-  if( d.x < length( posl - pos ) ) dif *= 0.7;
+  if( d.x < length( posl - pos ) && d.x < MAX_SHADOW_DIST) dif *= 0.7; // shadows
   return dif;
 }
 
@@ -178,32 +205,48 @@ void main(){
   vec3 col = vec3( 1.0 ); // this is our canvas
   //-------------------------------------------
   // camera
-  vec3 ro = vec3(5.0 * cos(time * 0.3), 3.0, 5.0 * sin(time * 0.3 + 0.2) );
+  //vec3 ro = vec3(5.0 * cos(time * 0.3), 3.0, 5.0 * sin(time * 0.3 + 0.2) );
   //vec3 ro = vec3(0.0, 0.0, -3.0);
-  vec3 rd = lookat(uv, ro, vec3(-0.5773, 0.5, 0.), 1.);
+  //vec3 rd = lookat(uv, ro, rd, 1.);
+  //vec3 ro2 = vec3(ro.x, clamp(ro.y, 0.0, 7.0), ro.z);
+  vec3 rd2 = lookat(uv, ro, ro + rd, 1.);
   // raytracing
-  float t = ray(ro, rd).x;
-  vec3 pos = ro + rd*t;
-  vec3 posl = vec3(-1.0, 1.0, -1.0);
-  vec3 posl2 = vec3(.0, 5.0, .0);
-  vec3 posl3 = vec3(3.0, 0.3, 3.0);
+  vec2 t = ray(ro, rd2);
+  vec3 pos = ro + rd2*t.x;
+  vec3 posl = vec3(-1.0, .8, -3.0);
+  vec3 posl2 = vec3(.0, 8.8, 0.0);
+  vec3 posl3 = vec3(3.0, .05, 3.0);
 
   float dif = dlight(pos, posl);
   float dif2 = dlight(pos, posl2);
   float dif3 = dlight(pos, posl3);
 
-  vec3 lcol = vec3(0.98, 0.97, 1.);
-  
-  //col = vec3(texture(moon, 0.5 + pos.xy).r);
-  //col = vec3(t);
-  col *= t/8.;
-  col *= 0.5*col + 0.5;
-  //col*=(0.5 * dif + min(dif, dif2));
-  col *= 0.8 * (dif * 1.5 + dif2 * 2.0 + dif3 * 0.9);
+  vec3 lcol = vec3(0.99, 0.93, 0.85);
+  vec3 atmcol = vec3(0.80, 0.80, 0.15);
 
+  vec3 atm = exp(-0.05 * t.x * atmcol);
+  if (t.y == 5.) col = vec3(texture(sandstone, pos.xy).r);
   
+  //dif *= texture(moon, 0.5 + pos.xy).r;
+  //col = vec3(t);
+  //col *= t/8.;
+  //col *= 0.5*col + 0.5;
+  //col*=(0.5 * dif + min(dif, dif2));
+  //col *= 0.8 * (dif * 1.5 + dif2 * 2.0 + dif3 * 0.9);
+  col *=  pow(0.5 * vec3(0.5 * dif + 0.5 * dif2 + 0.7 * dif3), vec3(1.2) - 0.3) * lcol;
+  //col = atm * col + 0.1 * (atm - 1.0); // col = atm * col + (1. - atm) make atmosphere white but negates color
+  col *= 2.0*atm + 0.2 + 1.0 - atm;
   //-------------------------------------------
   
-  gl_FragColor = vec4( pow(0.5 * vec3(0.5 * dif + 0.5 * dif2 + dif3), vec3(1.2) - 0.3) * lcol, 1.0 );
-  //gl_FragColor *= vec4(uv.x, uv.y, pos.z, 1.0);
+  gl_FragColor = vec4( col, 1.0 );
+  gl_FragColor += 0.2*vec4(uv.x, uv.y, pos.z, 1.0);
 }
+
+
+
+
+
+
+
+
+

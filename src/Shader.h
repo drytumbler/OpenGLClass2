@@ -2,7 +2,6 @@
 
 #pragma once
 
-// #include "config.h"
 #include "../include/glad/glad.h"
 #include <GLFW/glfw3.h>
 #include <string>
@@ -10,7 +9,6 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-// #include <glm/glm.hpp>
 
 unsigned int makeShaderMod(const std::string& filepath, unsigned int shader_type);
 
@@ -21,6 +19,12 @@ public:
   void Activate();
   void Delete();
   void Refresh(GLFWwindow* window);
+
+  std::string GetVertexShaderPath();
+  std::string GetFragmentShaderPath();
+
+  void SetVertexShaderPath(const char * filepath);
+  void SetFragmentShaderPath(const char* filepath);
 
 private:
   std::string vertexPath;

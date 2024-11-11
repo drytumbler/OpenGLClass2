@@ -17,6 +17,8 @@
 #include "Camera.h"
 #include "Primitive.h"
 
+
+
 #include "nfd/nfd.h"
 
 // put undefines here or in config.h
@@ -42,6 +44,8 @@ void mousePositionCallback(GLFWwindow* window, double xpos, double ypos);
 
 int session_id;
 
+
+//State state = State();
 int main()
 {
   setupGLFW();
@@ -108,6 +112,7 @@ int main()
   // Gather VBOs (if more then one)
   std::vector<VBO*> VBOs;
   VBOs.push_back(vbo);
+  State.Add(vbo);
   
   
   TriangleMesh* triangle = new TriangleMesh(VBOs, ibo); // it's a square!

@@ -1,5 +1,4 @@
 #pragma once
-#include "config.h"
 #include "IBO.h"
 #include "VBO.h"
 #include "VAO.h"

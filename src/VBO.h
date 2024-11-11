@@ -3,8 +3,11 @@
 #pragma once
 
 #include "../include/glad/glad.h"
+#include "State.h"
 #include <vector>
 #include <iostream>
+
+
 
 class VertexAttribute {
 public:
@@ -17,7 +20,7 @@ public:
   bool isInt;
 
   VertexAttribute(GLuint idx, GLint sz, GLenum tp, GLboolean norm, GLsizei str, void* off, bool intType = false)
-        : index(idx), size(sz), type(tp), normalized(norm), stride(str), offset(off), isInt(intType) {}
+        : index(idx), size(sz), type(tp), normalized(norm), stride(str), offset(off), isInt(intType) {  }
 };
 
 class VBO {

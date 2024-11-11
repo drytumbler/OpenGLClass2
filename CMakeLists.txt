@@ -20,6 +20,10 @@ set(SOURCES
     src/VBO.cpp
     src/VAO.cpp
     src/Camera.cpp
+    src/Primitive.cpp
+    src/TextEditorApp.cpp
+    src/TextEditorBuffer.cpp
+    src/ui.cpp
 )
 
 add_library(imgui STATIC
@@ -55,7 +59,8 @@ macro(create_executable name)
 endmacro()
 
 # Create all executables
-create_executable(main)
-create_executable(disp_tex)
+#create_executable(main)
+#create_executable(disp_tex)
 create_executable(shaderToy)
-create_executable(pyramid_ex)
+create_executable(prEditor)
+#create_executable(pyramid_ex)

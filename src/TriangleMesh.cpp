@@ -5,9 +5,9 @@
 TriangleMesh::TriangleMesh(std::vector<VBO*>& vbos, IBO* ibop) : VBOs(vbos), ibo(ibop){
     
   vao = new VAO();
+  vao->Bind();
 
   // Create and add VBOs
-
   for(auto& vbo : vbos){
     vbo->Bind();
     for(auto& attr : vbo->attributes){
@@ -15,14 +15,13 @@ TriangleMesh::TriangleMesh(std::vector<VBO*>& vbos, IBO* ibop) : VBOs(vbos), ibo
     }
     vbo->Unbind();
   }
- 
-    vertex_count = ibo->size;
+  vao->Unbind();
+  vertex_count = ibo->size;
 
-    //no attributes to set here..
-
+  State::GetInstance().Add(this);
 }
 
-void TriangleMesh::draw() {
+void TriangleMesh::Draw() {
   for(auto& vbo : VBOs){
     vbo->Bind();
   }
@@ -31,6 +30,19 @@ void TriangleMesh::draw() {
     //glDrawArrays(GL_TRIANGLES, 0, vertex_count);
   glDrawElements(GL_TRIANGLES, vertex_count, GL_UNSIGNED_INT, 0);
 }
+
+TriangleMesh::~TriangleMesh() {
+  glDeleteVertexArrays(1, &vao->ID);
+  glDeleteBuffers(1, &ibo->ID);
+
+  delete vao;
+  delete ibo;
+  
+}
+
+//--------------------------
+#ifdef DEBUG_ENABLED
+//--------------------------
 
 void TriangleMesh::Report() {
   std::cout << "data received:" << std::endl;
@@ -77,6 +89,7 @@ void TriangleMesh::Report() {
     //glBindBuffer(GL_ARRAY_BUFFER, 0);
     vbo->Unbind();			     
   }
+  
 
   std::vector<int> readBackIndices(ibo->size);
   ibo->Bind();
@@ -90,14 +103,8 @@ void TriangleMesh::Report() {
 	      << readBackIndices[i + 2] << ")" << std::endl;
   }
   ibo->Unbind();
-	
 }
 
-TriangleMesh::~TriangleMesh() {
-  glDeleteVertexArrays(1, &vao->ID);
-  glDeleteBuffers(1, &ibo->ID);
-
-  delete vao;
-  delete ibo;
-  
-}
+//--------------------------
+#endif
+//--------------------------

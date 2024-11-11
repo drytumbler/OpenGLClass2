@@ -12,7 +12,12 @@
 #include "Camera.h"
 //#include "math.h"
 
-#define abs(X) ((X<0)?-X:X)
+// functions:
+void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
+void setupGLFW();
+GLFWwindow *createWindow();
+
+//#define abs(X) ((X<0)?-X:X)
 
 int main()
 {
@@ -152,7 +157,7 @@ int main()
       mask->Use();
       sandstone->Use();
       
-      triangle->draw();
+      triangle->Draw();
 
       // Swap the screen buffers
       glfwSwapBuffers(window);

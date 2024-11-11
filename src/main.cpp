@@ -14,6 +14,10 @@
 
 //#include "math.h"
 
+// functions:
+void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
+void setupGLFW();
+GLFWwindow *createWindow();
 
 int main()
 {
@@ -143,10 +147,11 @@ int main()
 
   
   TriangleMesh* triangle = new TriangleMesh(VBOs, ibo); // it's a square!
-  triangle->Report();
-
   TriangleMesh* cube = new TriangleMesh(lightVBOs, lightIBO);
+#ifdef DEBUG_ENABLED
+  triangle->Report();
   cube->Report();
+#endif
   
   Material* material = new Material("../src/textures/lenna.png");
 
@@ -259,11 +264,11 @@ int main()
       mask->Use();
       sandstone->Use();
       
-      triangle->draw();
+      triangle->Draw();
       lightShader.Activate();
       glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(lightModel));
       camera.Export(lightShader, "camMatrix");
-      cube->draw();
+      cube->Draw();
 
       // Swap the screen buffers
       glfwSwapBuffers(window);

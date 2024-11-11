@@ -5,14 +5,19 @@
 // The code originally used GLEW, I replaced it with Glad
 // Compile command : cmake - S..- B../ build - DCMAKE_BUILD_TYPE = Debug && cmake-- build../ build
                                   
-//#include "config.h"
+#include "config.h"
+
 #include "Material.h"
 #include "TriangleMesh.h"
 #include "Shader.h"
 #include "VBO.h"
 #include "Camera.h"
-#include <glm/ext/matrix_transform.hpp>
-//#include "math.h"
+
+
+// functions:
+void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
+void setupGLFW();
+GLFWwindow *createWindow();
 
 
 int main()
@@ -246,6 +251,7 @@ int main()
       glUniformMatrix3fv(glGetUniformLocation(shader.ID, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(normalMatrix));
       camera.Update(PI / 2.0f, 0.1f, 100.0f);
       camera.Export(shader, "camMatrix");
+      camera.ExportDir(shader, "camDir");
       
       // Update uniforms
       glUniform1f(u_Scale, scale);
@@ -259,11 +265,11 @@ int main()
       mask->Use();
       sandstone->Use();
       
-      triangle->draw();
+      triangle->Draw();
       lightShader.Activate();
       glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(lightModel));
       camera.Export(lightShader, "camMatrix");
-      cube->draw();
+      cube->Draw();
 
       // Swap the screen buffers
       glfwSwapBuffers(window);

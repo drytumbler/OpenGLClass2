@@ -122,3 +122,17 @@ void Shader::Refresh(GLFWwindow* window) {
     glUseProgram(ID);
   }
 }
+
+std::string Shader::GetVertexShaderPath() {
+  return vertexPath;
+}
+std::string Shader::GetFragmentShaderPath() {
+  return fragmentPath;  
+}
+
+void Shader::SetVertexShaderPath(const char *filepath) {
+  vertexPath = filepath;  
+}
+void Shader::SetFragmentShaderPath(const char *filepath) {
+  fragmentPath = filepath;  
+}

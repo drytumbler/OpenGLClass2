@@ -8,7 +8,7 @@ out vec2 fragmentTexCoord;
 
 out vec3 vertexNormal;
 
-out vec3 crntPos;
+//out vec3 crntPos;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -26,3 +26,4 @@ void main(){
     fragmentTexCoord = (vertexPos.xy + 1.0) / 2.0;
     
 }
+
