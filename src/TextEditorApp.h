@@ -8,6 +8,7 @@
 #include "imgui/imgui.h"
 #include "config.h"
 #include "TextEditorBuffer.h"
+#include "Shader.h"
 
 // #include <algorithm>
 

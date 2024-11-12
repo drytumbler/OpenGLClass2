@@ -36,13 +36,58 @@ unsigned int makeShaderMod(const std::string& filepath, unsigned int shader_type
 
     return shaderModule;
 }
+unsigned int makeShaderMod(const char* data, unsigned int shader_type, bool rawFlag){
+    
+    unsigned int shaderModule = glCreateShader(shader_type);
+    glShaderSource(shaderModule, 1, &data, NULL);
+    glCompileShader(shaderModule);
 
+    //error handling
+    int succes;
+    glGetShaderiv(shaderModule, GL_COMPILE_STATUS, &succes);
+    if(succes == GL_FALSE){
+        char errorLog[1024];
+        glGetShaderInfoLog(shaderModule, 1024, NULL, errorLog);
+        std::cout << "Shader Module Compilation Error in " << ((shader_type == 0x8B30 ) ? "fragment":"vertex" )<< ":\n" <<errorLog << std::endl;
+	glDeleteShader(shaderModule);
+        return 0;
+    }
+
+    return shaderModule;
+}
+Shader::Shader(){}
 Shader::Shader(const std::string &vertex_filepath,
                const std::string &fragment_filepath)
   : vertexPath(vertex_filepath), fragmentPath(fragment_filepath) {
     std::vector<unsigned int> modules;
     modules.push_back(makeShaderMod(vertex_filepath, GL_VERTEX_SHADER));
     modules.push_back(makeShaderMod(fragment_filepath, GL_FRAGMENT_SHADER));
+
+    ID = glCreateProgram();
+    for (unsigned int shaderModule : modules){
+        glAttachShader(ID, shaderModule);
+    }
+    glLinkProgram(ID);
+
+    //error handling
+    int succes;
+    glGetProgramiv(ID, GL_LINK_STATUS, &succes);
+    if(succes == GL_FALSE){
+        char errorLog[1024];
+        glGetProgramInfoLog(ID, 1024, NULL, errorLog);
+        std::cout << "Shader Program Linking Error:\n" <<errorLog << std::endl;
+    }
+    //clean up
+    for (unsigned int shaderModule : modules){
+        glDeleteShader(shaderModule);
+    }
+}
+Shader::Shader(const char* vertData, const char* fragData, bool rawFlag)
+  : vertexPath("raw"), fragmentPath("raw") {
+
+    std::vector<unsigned int> modules;
+    modules.push_back(makeShaderMod(vertData, GL_VERTEX_SHADER, true));
+    modules.push_back(makeShaderMod(fragData, GL_FRAGMENT_SHADER, true));
 
     ID = glCreateProgram();
     for (unsigned int shaderModule : modules){
@@ -136,3 +181,13 @@ void Shader::SetVertexShaderPath(const char *filepath) {
 void Shader::SetFragmentShaderPath(const char *filepath) {
   fragmentPath = filepath;  
 }
+
+Shader Shader::pushShader(const char *vertData, const char *fragData) {
+  Shader shader(vertData, fragData, true);
+  shader.Activate();
+  Shader::SetStaticShader(shader);
+
+  return shader;
+}
+
+Shader Shader::StaticShader = Shader();

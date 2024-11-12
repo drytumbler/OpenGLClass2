@@ -52,8 +52,29 @@ void TextEditorApp::DisplayDocContents(TextEditorBuffer* doc){
   ImGui::SameLine();
   
   ImGui::SetNextItemShortcut(ImGuiMod_Ctrl | ImGuiKey_R, ImGuiInputFlags_Tooltip);
-  if (ImGui::Button("Refresh"))
-    doc->DoRefreshShader();
+  if (ImGui::Button("Refresh")){
+    //quick hqck to rehresh vertex shader
+    std::string vertexData = "";
+    vertexData += "#version 330 core\n";
+    vertexData += "layout (location = 0) in vec3 vertexPos;\n";
+    vertexData += "layout (location = 1) in vec3 vertexColor;\n";
+    vertexData += "out vec3 fragmentColor;\n";
+    vertexData += "out vec2 fragmentTexCoord;\n";
+    //out vec3 vertexNormal;
+    //out vec3 crntPos;
+    vertexData += "uniform mat4 model;\n";
+    vertexData += "uniform mat4 view;\n";
+    vertexData += "uniform mat4 proj;\n";
+    vertexData += "uniform vec2 res;\n";
+    vertexData += "uniform float time;\n";
+    vertexData += "void main(){\n";
+    vertexData += "  gl_Position = proj * view * model * vec4(vertexPos, 1.0f);\n";
+    //fragmentColor = vertexColor;
+    vertexData += "    fragmentTexCoord = (vertexPos.xy + 1.0) / 2.0;\n";
+    vertexData += "}\n";
+    Shader::pushShader(vertexData.c_str(), doc->Data);
+  }
+  //doc->DoRefreshShader();
   
   ImGui::SameLine();
   ImGui::SetNextItemShortcut(ImGuiMod_Ctrl | ImGuiKey_S, ImGuiInputFlags_Tooltip);

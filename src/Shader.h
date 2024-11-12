@@ -16,6 +16,8 @@ class Shader {
 public:
   GLuint ID;
   Shader(const std::string &vertex_filepath, const std::string &fragment_filepath);
+  Shader(const char* vertData, const char* fragData, bool rawFlag);
+  Shader();
   void Activate();
   void Delete();
   void Refresh(GLFWwindow* window);
@@ -26,9 +28,14 @@ public:
   void SetVertexShaderPath(const char * filepath);
   void SetFragmentShaderPath(const char* filepath);
 
+  static Shader StaticShader;
+  static Shader pushShader(const char* vertData, const char* fragData);
+
 private:
+  
   std::string vertexPath;
   std::string fragmentPath;
   
   void CompileErrors(unsigned int shader, const char* type);
+  static void SetStaticShader(Shader shader){ StaticShader = shader; } 
 };

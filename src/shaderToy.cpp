@@ -174,8 +174,8 @@ int main()
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       // Apply the shader
-      shader.Activate();
-      
+      //      shader.Activate();
+      Shader::StaticShader.Activate();
       // Update uniforms
       glUniform1f(u_Time, time);
       glUniform2fv(u_Resolution, 1, &res[0]);
