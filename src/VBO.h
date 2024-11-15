@@ -3,7 +3,6 @@
 #pragma once
 
 #include "../include/glad/glad.h"
-#include "State.h"
 #include <vector>
 #include <iostream>
 
@@ -31,6 +30,7 @@ public:
   VBO(const std::vector<float> data, const std::vector<VertexAttribute> layout);
   void Bind();
   void Unbind();
+  void Report();
   ~VBO();
 };
 

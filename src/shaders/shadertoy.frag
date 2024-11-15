@@ -225,7 +225,7 @@ void main(){
   vec3 atmcol = vec3(0.80, 0.80, 0.15);
 
   vec3 atm = exp(-0.05 * t.x * atmcol);
-  if (t.y == 5.) col = vec3(texture(sandstone, pos.xy).r);
+  if (t.y == 5.) col = vec3(texture(moon, pos.xy).r);
   
   //dif *= texture(moon, 0.5 + pos.xy).r;
   //col = vec3(t);
@@ -238,16 +238,6 @@ void main(){
   col *= 2.0*atm + 0.2 + 1.0 - atm;
   //-------------------------------------------
   
-  gl_FragColor = vec4( col, 1.0 );
-  gl_FragColor += 0.2*vec4(uv.x, uv.y, pos.z, 1.0);
+  gl_FragColor = vec4(col,  1.0 );
+  gl_FragColor += 0.82*vec4(uv.x, uv.y, pos.z, 1.0);
 }
-
-
-
-
-
-
-
-
-
-

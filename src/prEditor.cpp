@@ -71,8 +71,10 @@ int main()
       ImGui_ImplOpenGL3_NewFrame();
       ImGui_ImplGlfw_NewFrame();      
       ImGui::NewFrame();
-      
-      Editor.Show();
+      int windowWidth, windowHeight;
+      glfwGetWindowSize(window, &windowWidth, &windowHeight);
+      ImVec2 space = ImVec2(windowWidth, windowHeight - ImGui::GetFrameHeight());
+      Editor.Show(space);
 
       glClearColor(0.019f, 0.0185f, 0.0165f, 1.0f);
   

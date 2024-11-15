@@ -2,6 +2,17 @@
 
 
 #include "ui.h"
+#include "TextEditorApp.h"
+#include "TextureBrowser.h"
+#include "config.h"
+#include "imgui/imgui.h"
+
+TextEditorApp ui::Editor;
+TextureBrowser ui::Texter;
+std::filesystem::path ui::BrowserPath = DEFAULT_LOAD_PATH;
+
+bool ui::EditorReady = false;
+bool ui::TexterReady = false;
 
 void ui::Toggle() {
   uiOn = !uiOn;
@@ -40,7 +51,11 @@ void ui::Run() {
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();      
 
+  int windowWidth, windowHeight;
+  glfwGetWindowSize(Window, &windowWidth, &windowHeight);
+  
   ImGui::NewFrame();
+  ImVec2 space = ImVec2(windowWidth, windowHeight - ImGui::GetFrameHeight());
   if(uiOn){
     if (ImGui::BeginMainMenuBar()){
       if (ImGui::BeginMenu(UI_MAIN_BAR_MENU_1)){
@@ -50,7 +65,8 @@ void ui::Run() {
       
       ImGui::EndMainMenuBar();
     }
-    ShowTextEditorApp();
+    ShowTextEditorApp(space);
+    ShowTextureBrowser(space);
     uiHovered = ( ImGui::IsAnyItemHovered() || ImGui::IsAnyItemFocused() || ImGui::IsAnyItemActive() );
     uiHovered += ( ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow) || ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow) );
   }
@@ -95,14 +111,20 @@ void ui::ShowMainFileMenu(){
   }
 
   ImGui::Separator();
-  if (ImGui::MenuItem("Editor...", "")) { Editor.Visible = !Editor.Visible; }
+  if (ImGui::MenuItem(Editor.Visible ? "Hide Editor" : "Editor...", "")) { ui::Editor.Visible = !ui::Editor.Visible; }
+  if (ImGui::MenuItem(Texter.Visible ? "Hide Textures" : "Textures...", "")) { ui::Texter.Visible = !ui::Texter.Visible; }
   ImGui::Separator();
   if (ImGui::MenuItem("Quit", "Alt+F4")) { uiRequestExit=true; }
 }
 
-void ui::ShowTextEditorApp(){
+void ui::ShowTextEditorApp(ImVec2 space){
   if(Editor.Visible)
-    Editor.Show();
+    Editor.Show(space);
+}
+
+void ui::ShowTextureBrowser(ImVec2 space) {
+  if(Texter.Visible)
+    Texter.Display(space);
 }
 
 bool ui::RunActivityCheck() {

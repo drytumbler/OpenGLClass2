@@ -9,6 +9,7 @@
 #include "config.h"
 #include "TextEditorBuffer.h"
 #include "Shader.h"
+#include "State.h"
 
 // #include <algorithm>
 
@@ -42,13 +43,13 @@ struct TextEditorApp
   std::string loadPath = expandHome(DEFAULT_LOAD_PATH);
     
   TextEditorApp();
-  void DisplayMenuBar();
+  void DisplayMenuBar(int open_count);
   void GetTabName(TextEditorBuffer* doc, char* out_buf, size_t out_buf_size);
   void DisplayDocContents(TextEditorBuffer* doc);
   void DisplayDocContextMenu(TextEditorBuffer* doc);
   void NotifyOfDocumentsClosedElsewhere();
   int  RequestDocumentID();
-  void Show();
+  void Show(ImVec2 space);
   void OpenDocument();
   void AppendToRecentDocuments(const char* text);
   bool CustomButton(const char* label, const ImVec2& size, ImU32 textcolor = IM_COL32(255,255,255,255));

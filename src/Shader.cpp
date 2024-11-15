@@ -1,23 +1,14 @@
 // Shader.cpp
 
 #include "Shader.h"
+#include "State.h"
+#include "config.h"
+Shader Shader::StaticShader = Shader();
 
 unsigned int makeShaderMod(const std::string& filepath, unsigned int shader_type){
-    
-    // load the shader code (cpu)
-    std::ifstream file;
-    std::stringstream bufferedLines;
-    std::string line;
-
-    file.open(filepath);
-    while (std::getline(file, line)){
-        bufferedLines << line << "\n";
-    }
-    std::string shaderSource = bufferedLines.str();
-    const char* shaderSrc = shaderSource.c_str();
-    bufferedLines.str("");
-    file.close();
-
+    // read the shader code (cpu)     
+  std::string shaderSource = get_file_string(filepath.c_str());
+  const char* shaderSrc = shaderSource.c_str();
     //load and compile the shader module (gpu)
     unsigned int shaderModule = glCreateShader(shader_type);
     glShaderSource(shaderModule, 1, &shaderSrc, NULL);
@@ -55,7 +46,9 @@ unsigned int makeShaderMod(const char* data, unsigned int shader_type, bool rawF
 
     return shaderModule;
 }
-Shader::Shader(){}
+Shader::Shader() {
+  State::GetInstance().Add(this);    
+}
 Shader::Shader(const std::string &vertex_filepath,
                const std::string &fragment_filepath)
   : vertexPath(vertex_filepath), fragmentPath(fragment_filepath) {
@@ -81,6 +74,8 @@ Shader::Shader(const std::string &vertex_filepath,
     for (unsigned int shaderModule : modules){
         glDeleteShader(shaderModule);
     }
+
+    State::GetInstance().Add(this);
 }
 Shader::Shader(const char* vertData, const char* fragData, bool rawFlag)
   : vertexPath("raw"), fragmentPath("raw") {
@@ -107,11 +102,19 @@ Shader::Shader(const char* vertData, const char* fragData, bool rawFlag)
     for (unsigned int shaderModule : modules){
         glDeleteShader(shaderModule);
     }
+
+    State::GetInstance().Add(this);
 }
 
 void Shader::Activate() { glUseProgram(ID); }
 
-void Shader::Delete() { glDeleteShader(ID); }
+void Shader::Delete() {
+  glDeleteShader(ID);
+  int total = State::GetInstance().Shaders.size();
+  for(int i = 0; i <  total; i++){
+    if (State::GetInstance().Shaders[i]->ID == ID) State::GetInstance().Shaders.erase(State::GetInstance().Shaders.begin() + i);
+  }
+}
 
 // other error checking function...
 void Shader::CompileErrors(unsigned int shader, const char *type) {
@@ -133,9 +136,7 @@ void Shader::CompileErrors(unsigned int shader, const char *type) {
 }
 
 
-void Shader::Refresh(GLFWwindow* window) {
-
-  if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+void Shader::Refresh() {
 
     glDeleteProgram(ID);
     
@@ -165,7 +166,6 @@ void Shader::Refresh(GLFWwindow* window) {
     }
 
     glUseProgram(ID);
-  }
 }
 
 std::string Shader::GetVertexShaderPath() {
@@ -183,11 +183,10 @@ void Shader::SetFragmentShaderPath(const char *filepath) {
 }
 
 Shader Shader::pushShader(const char *vertData, const char *fragData) {
+  StaticShader.Delete();
   Shader shader(vertData, fragData, true);
   shader.Activate();
   Shader::SetStaticShader(shader);
-
+  
   return shader;
 }
-
-Shader Shader::StaticShader = Shader();

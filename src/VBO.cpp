@@ -1,7 +1,7 @@
 // VBO.cpp
 
 #include "VBO.h"
-#include <iostream>
+#include "State.h"
 
 VBO::VBO(const std::vector<float> data, const std::vector<VertexAttribute> layout)
   :attributes(layout), vertices(data){
@@ -28,7 +28,14 @@ void VBO::Bind() { glBindBuffer(GL_ARRAY_BUFFER, ID); }
 
 void VBO::Unbind() { glBindBuffer(GL_ARRAY_BUFFER, 0); }
 
+void VBO::Report(){   std::cout << "VBO " << ID << " reporting.\n" << this << std::endl;}
 
-VBO::~VBO() { glDeleteBuffers(1, &ID); }
+VBO::~VBO() {
+  glDeleteBuffers(1, &ID);
+  int total = State::GetInstance().VBOs.size();
+  for(int i = 0; i <  total; i++){
+    if (State::GetInstance().VBOs[i]->ID == ID) State::GetInstance().VBOs.erase(State::GetInstance().VBOs.begin() + i);
+  }
+}
 
 

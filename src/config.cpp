@@ -51,6 +51,12 @@ std::filesystem::path constructFullPath(const char *path, const char *name) {
   return fullpath;
 }
 
+const char* getBaseName(std::filesystem::path path, char* basename, int size){
+    int n = strlen(path.filename().c_str()) - strlen(path.extension().c_str());
+    strncpy(basename, path.filename().c_str(), n);
+    basename[(int)fmin(n, size-1)] = '\0';
+    return basename;
+}
 
 std::uintmax_t getFileSize(const std::string& filePath) {
     try {
@@ -70,4 +76,21 @@ std::string expandHome(const std::string& path) {
         }
     }
     return path; // return original if no expansion
+}
+
+std::string get_file_string(const char* filepath){
+    std::ifstream file;
+    std::stringstream bufferedLines;
+    std::string line;
+
+    file.open(filepath);
+    while (std::getline(file, line)){
+        bufferedLines << line << "\n";
+    }
+    std::string result = bufferedLines.str();
+
+    bufferedLines.str("");
+    file.close();
+
+    return result;
 }

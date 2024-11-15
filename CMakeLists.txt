@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 project(my_test_cmake_project VERSION 0.1.1)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 find_package(OpenGL REQUIRED)
 
 find_package(PkgConfig REQUIRED)
@@ -24,6 +27,8 @@ set(SOURCES
     src/TextEditorApp.cpp
     src/TextEditorBuffer.cpp
     src/ui.cpp
+    src/State.cpp
+    src/TextureBrowser.cpp
 )
 
 add_library(imgui STATIC
@@ -63,4 +68,5 @@ endmacro()
 #create_executable(disp_tex)
 create_executable(shaderToy)
 create_executable(prEditor)
+create_executable(main)
 #create_executable(pyramid_ex)

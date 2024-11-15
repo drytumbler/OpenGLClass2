@@ -2,7 +2,8 @@
 
 #include "IBO.h"
 
-IBO::IBO(const std::vector<GLuint> data) : indices(data), size(data.size()) {
+IBO::IBO(const std::vector<GLuint> data) : indices(data) {
+
   glGenBuffers(1, &ID);
 
   if (ID == 0) {
@@ -11,7 +12,7 @@ IBO::IBO(const std::vector<GLuint> data) : indices(data), size(data.size()) {
   
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ID);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-	       size * sizeof(unsigned int),
+	       indices.size() * sizeof(unsigned int),
 	       indices.data(),
 	       GL_STATIC_DRAW);
 }

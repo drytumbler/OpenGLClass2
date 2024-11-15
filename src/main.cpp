@@ -45,7 +45,7 @@ int main()
       -0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 1.0f, 0.0f,     -0.8f, 0.5f,  0.0f, // Left Side
       0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	 0.5f, 1.0f,     -0.8f, 0.5f,  0.0f, // Left Side
       
-      -0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 2.0f, 0.0f,      0.0f, 0.5f, -0.8f, // Non-facing side
+      -0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 1.0f, 0.0f,      0.0f, 0.5f, -0.8f, // Non-facing side
       0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 0.0f, 0.0f,      0.0f, 0.5f, -0.8f, // Non-facing side
       0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	 0.5f, 1.0f,      0.0f, 0.5f, -0.8f, // Non-facing side
       
@@ -108,22 +108,29 @@ int main()
     0, 1, 3, 1, 2, 3
     };
   */
-  
+
+  std::vector<float> planeVertices = {
+    -15., 0.1, 15., 1., 1., 1., -1., -1., 0., 1., 0.,
+    15., 0.-1, 15., 1., 1., 1., 1., -1., 0., 1., 0.,
+    15., 0.1, -15., 1., 1., 1., 1., 1., 0., 1., 0.,
+    -15., -0.1, -15., 1., 1., 1., -1., 1., 0., 1., 0.
+  };
+  std::vector<GLuint> planeIndices = { 0, 1, 2, 0, 2, 3 };
+
   setupGLFW();
   GLFWwindow *window = createWindow();
+
   
-  // Set the clear color
-  glClearColor(0.19f, 0.185f, 0.165f, 1.0f);
-  
-  // Setup viewport
-  int width, height;
-  glfwGetFramebufferSize(window, &width, &height);
-  
-  // Stuff
-  GLint maxVertices, maxIndices;
-  glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &maxVertices);
-  glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &maxIndices);
-  std::cout << "Max vertices: " << maxVertices << ", Max indices: " << maxIndices << std::endl;
+  Material* material = new Material("../src/textures/lenna.png");
+  Material* mask = new Material("../src/textures/mask.png");
+  Material* sandstone = new Material("../src/textures/sandstone.png");
+  Material* sandstone1 = new Material("../src/textures/TH_Yellow_Bricks_baseColor.png");
+  Material* sandstone2 = new Material("../src/textures/TH_Yellow_Bricks_roughness.png");
+  Material* sandstone3 = new Material("../src/textures/TH_Yellow_Bricks_normal.png");
+  Material* beach1 = new Material("../src/textures/Smooth_Beach_Sand_baseColor.png");
+  Material* beach2 = new Material("../src/textures/Smooth_Beach_Sand_mask.png");
+  Material* beach3 = new Material("../src/textures/Smooth_Beach_Sand_normal.png");
+
   
   std::vector<VertexAttribute> attributes = {
     VertexAttribute(0, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*) 0, false),
@@ -137,7 +144,9 @@ int main()
   
   VBO* lightVBO = new VBO(lightVertices, lightAttributes);
   IBO* lightIBO = new IBO(lightIndices);
-  
+
+  VBO* planeVBO = new VBO(planeVertices, attributes);
+  IBO* planeIBO = new IBO(planeIndices);
   
   std::vector<VBO*> VBOs;
   VBOs.push_back(vbo);
@@ -146,19 +155,18 @@ int main()
   lightVBOs.push_back(lightVBO);
 
   
-  TriangleMesh* triangle = new TriangleMesh(VBOs, ibo); // it's a square!
-  TriangleMesh* cube = new TriangleMesh(lightVBOs, lightIBO);
+  std::vector<VBO*> planeVBOs;
+  planeVBOs.push_back(planeVBO);
+
+  
+  TriangleMesh* triangle = new TriangleMesh(VBOs, ibo, std::vector<Material*> { sandstone1, sandstone2, sandstone3 }); // it's a square!
+  TriangleMesh* cube = new TriangleMesh(lightVBOs, lightIBO, std::vector<Material*> {});
+  TriangleMesh* plane = new TriangleMesh(planeVBOs, planeIBO, std::vector<Material*> { beach1, beach2, beach3 });
 #ifdef DEBUG_ENABLED
   triangle->Report();
   cube->Report();
+  plane->Report();
 #endif
-  
-  Material* material = new Material("../src/textures/lenna.png");
-
-  Material* mask = new Material("../src/textures/mask.png");
-
-  Material* sandstone = new Material("../src/textures/sandstone.png");
-  
   
   //setup shaders
   Shader shader(
@@ -170,12 +178,17 @@ int main()
 		    "../src/shaders/light.vert",
 		    "../src/shaders/light.frag"
 		     );
+  
 
-
-  glm::vec4 lightColor = glm::vec4(1.0f, 0.9f, 0.7f, 1.0f);
-
+  Shader planeShader(
+		    "../src/shaders/plane.vert",
+		    "../src/shaders/plane.frag"
+		     );
+  
   // setup models
-  glm::vec3 lightPos = glm::vec3(1.7f, 0.05f, 0.5f);
+
+  glm::vec4 lightColor = glm::vec4(0.9f, 1.0f, 1.0f, 1.0f);
+  glm::vec3 lightPos = glm::vec3(1.7f, 3.05f, 2.5f);
   glm::mat4 lightModel = glm::mat4(1.0f);
   lightModel = glm::translate(lightModel, lightPos);
 
@@ -192,15 +205,28 @@ int main()
   //bind the shader
   //glUseProgram(shader.ID); //always load shader before applying further changes
   shader.Activate();
-  glUniform4f(glGetUniformLocation(shader.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.a);
+  glUniform4fv(glGetUniformLocation(shader.ID, "lightColor"), 1, glm::value_ptr(lightColor));
   glUniform3f(glGetUniformLocation(shader.ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
   //setup texture uniforms
-  glUniform1i(glGetUniformLocation(shader.ID, "material"), 0);
-  glUniform1i(glGetUniformLocation(shader.ID, "mask"), 1);
-  glUniform1i(glGetUniformLocation(shader.ID, "sandstone"), 2);
+
+
   
   glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(pyramidModel));
-
+  
+  // Set the clear color
+  glClearColor(0.19f, 0.185f, 0.165f, 1.0f);
+  
+  // Setup viewport
+  int width, height;
+  glfwGetFramebufferSize(window, &width, &height);
+  
+  // Stuff
+  GLint maxVertices, maxIndices;
+  glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &maxVertices);
+  glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &maxIndices);
+  std::cout << '\a';
+  std::cout << "Max vertices: " << maxVertices << ", Max indices: " << maxIndices << std::endl;
+  
   Camera camera(width, height, glm::vec3(0.0f, 0.0f, 1.0f));
   
   //setup blending options
@@ -234,10 +260,10 @@ int main()
       scale = sin(time);
   
       glClearColor(0.019f, 0.0185f, 0.0165f, 1.0f);
-
+      //blightColor = glm::vec4(1.0f * sin(time), 0.9f * cos(time), 0.7f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-      pyramidModel = glm::rotate(pyramidModel, glm::radians(1.0f), glm::vec3(0.0f,1.0f,0.0f));
+      pyramidModel = glm::rotate(pyramidModel, glm::radians(.02f), glm::vec3(0.0f,1.0f,0.0f));
       normalMatrix = glm::transpose(glm::inverse(glm::mat3(pyramidModel)));
 
       //lightModel = glm::mat4(1.0f);
@@ -247,9 +273,18 @@ int main()
 
       // Apply the shader
       shader.Activate();
+      glUniform1i(glGetUniformLocation(shader.ID, "material"), 0);
+      glUniform1i(glGetUniformLocation(shader.ID, "mask"), 1);
+      glUniform1i(glGetUniformLocation(shader.ID, "sandstone"), 2);
+      glUniform1i(glGetUniformLocation(shader.ID, "sandstone1"), 3);
+      glUniform1i(glGetUniformLocation(shader.ID, "sandstone2"), 4);
+      glUniform1i(glGetUniformLocation(shader.ID, "sandstone3"), 5);
+      
       glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(pyramidModel));
       glUniformMatrix3fv(glGetUniformLocation(shader.ID, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(normalMatrix));
-      camera.Update(PI / 2.0f, 0.1f, 100.0f);
+      glUniform4fv(glGetUniformLocation(shader.ID, "lightColor"), 1, glm::value_ptr(lightColor));
+
+      camera.Update(PI / 4.0f, 0.1f, 100.0f);
       camera.Export(shader, "camMatrix");
       
       // Update uniforms
@@ -263,12 +298,32 @@ int main()
       material->Use();
       mask->Use();
       sandstone->Use();
+      sandstone1->Use();
+      sandstone2->Use();
+      sandstone3->Use();
+
       
-      triangle->Draw();
+      triangle->Draw(shader, camera);
+
+      planeShader.Activate();
+      glUniform1i(glGetUniformLocation(planeShader.ID, "beach1"), 6);
+      glUniform1i(glGetUniformLocation(planeShader.ID, "beach2"), 7);
+      glUniform1i(glGetUniformLocation(planeShader.ID, "beach3"), 8);
+      glUniformMatrix4fv(glGetUniformLocation(planeShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(pyramidModel));
+
+
+      beach1->Use();
+      beach2->Use();
+      beach3->Use();
+      camera.Export(planeShader, "camMatrix");
+      plane->Draw(shader, camera);
+      
       lightShader.Activate();
       glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(lightModel));
+      glUniform4fv(glGetUniformLocation(lightShader.ID, "lightColor"), 1, glm::value_ptr(lightColor));
+
       camera.Export(lightShader, "camMatrix");
-      cube->Draw();
+      cube->Draw(lightShader, camera);
 
       // Swap the screen buffers
       glfwSwapBuffers(window);
@@ -277,11 +332,26 @@ int main()
   //cleanup
   shader.Delete();
   delete triangle;
+  delete cube;
   delete material;
   delete mask;
+  delete sandstone;
+  delete sandstone1;
+  delete sandstone2;
+  delete sandstone3;
+
   delete vbo;
-  
-    
+  delete lightVBO;
+  delete ibo;
+  delete lightIBO;
+
+  delete planeVBO;
+  delete planeIBO;
+  delete beach1;
+  delete beach2;
+  delete beach3;
+  delete plane;
+
   // Terminates GLFW, clearing any resources allocated by GLFW.
   glfwTerminate();
   return 0;
@@ -296,7 +366,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 
 // Mouse position callback function
 void mousePositionCallback(GLFWwindow* window, double xpos, double ypos) {
-  std::cout << "Mouse Position: (" << xpos << ", " << ypos << ")\n";
+  //std::cout << "Mouse Position: (" << xpos << ", " << ypos << ")\n";
 }
 
 // Mouse button callback function

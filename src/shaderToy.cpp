@@ -8,6 +8,12 @@
 #define WIDTH 1280
 #define HEIGHT 796
 #define MAIN_WINDOW_NAME "shaderNvader"
+
+#define NDEBUG
+#define IMGUI_DISABLE_ASSERTS
+#define IMGUI_DISABLE_DEBUG_TOOLS
+
+
 #include "config.h"
 
 #include "Material.h"
@@ -16,6 +22,7 @@
 #include "VBO.h"
 #include "Camera.h"
 #include "Primitive.h"
+#include "State.h"
 
 #include "nfd/nfd.h"
 
@@ -85,12 +92,12 @@ int main()
   };
   
   // Vertex Attributes
+  // [x, y, z] [r, g, b] [tX, tY]
   std::vector<VertexAttribute> attributes = {
     VertexAttribute(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0, false),
     VertexAttribute(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)), false),
     VertexAttribute(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (6 * sizeof(float)), false)
   };
-
 
   // Primitive
   Primitive primate = Primitive(glm::vec3(0.0,2.0,0.0), 0.5, "none");
@@ -109,16 +116,18 @@ int main()
   std::vector<VBO*> VBOs;
   VBOs.push_back(vbo);
   
-  
-  TriangleMesh* triangle = new TriangleMesh(VBOs, ibo); // it's a square!
+  TriangleMesh* triangle = new TriangleMesh(VBOs, ibo, std::vector<Material*> {}); // it's a square!
   #ifdef DEBUG_ENABLED
   triangle->Report();
   #endif
+  /*
   Material* material = new Material("../src/textures/lenna.png");
   Material* mask = new Material("../src/textures/mask.png");
   Material* sandstone = new Material("../src/textures/sandstone.png");
   Material* moon = new Material("../src/textures/moon.png");
-  
+  */
+
+  /*
   // TODO -> check filename
   //setup shaders
   Shader shader(
@@ -129,9 +138,10 @@ int main()
   //bind the shader
   
   //shader.Activate();
+  */
   //setup texture uniforms - moved to while loop
 
-  // MARK  not needed for current setup
+  // MARK  not needed for current setup?
   
   
   //setup blending options
@@ -163,19 +173,22 @@ int main()
 #endif
     {
       glfwMakeContextCurrent(window);
-
-#ifdef UI_ENABLED
-      //      UI.Run();
-#endif
-
+      int width, height;
+      glfwGetFramebufferSize(window, &width, &height);
+      glViewport(0, 0, width, height);
+      
       glClearColor(0.019f, 0.0185f, 0.0165f, 1.0f);
       time = (float)glfwGetTime();
-       
+      res = glm::vec2(1.0f * width, 1.0f * height);
+
+      u_Time = glGetUniformLocation(Shader::StaticShader.ID, "time");
+      u_Resolution = glGetUniformLocation(Shader::StaticShader.ID, "res");
+
+      
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-      // Apply the shader
-      //      shader.Activate();
       Shader::StaticShader.Activate();
+
       // Update uniforms
       glUniform1f(u_Time, time);
       glUniform2fv(u_Resolution, 1, &res[0]);
@@ -192,16 +205,16 @@ int main()
       //model = glm::rotate(model, 0.08f * PI * time, glm::vec3(0.0,1.0,0.0));
       
 
-      unsigned int u_Model = glGetUniformLocation(shader.ID, "model");
-      unsigned int u_View  = glGetUniformLocation(shader.ID, "view");
-      unsigned int u_Projection = glGetUniformLocation(shader.ID, "proj");
+      unsigned int u_Model = glGetUniformLocation(Shader::StaticShader.ID, "model");
+      unsigned int u_View  = glGetUniformLocation(Shader::StaticShader.ID, "view");
+      unsigned int u_Projection = glGetUniformLocation(Shader::StaticShader.ID, "proj");
 
       //unsigned int u_Camera= glGetUniformLocation(shader.ID, "camera");
       //      camera.direction = normalize(camera.direction);
       //camera.Update(PI / 2., 0.1, 10.);
-      camera.ExportDir(shader, "rd");
-      camera.ExportRight(shader, "ri");
-      camera.ExportPos(shader, "ro");
+      camera.ExportDir(Shader::StaticShader, "rd");
+      camera.ExportRight(Shader::StaticShader, "ri");
+      camera.ExportPos(Shader::StaticShader, "ro");
       
 #ifdef UI_ENABLED
       if(!UI.uiHovered)
@@ -211,17 +224,17 @@ int main()
 #endif
 
       
-      primate.Export(shader, "primate");
+      primate.Export(Shader::StaticShader, "primate");
       orb.position = glm::vec3(sin(time), 2.0, cos(time));
-      orb.Export(shader, "orb");
+      orb.Export(Shader::StaticShader, "orb");
       
-      u_Time = glGetUniformLocation(shader.ID, "time");
-      u_Resolution = glGetUniformLocation(shader.ID, "res");
+      u_Time = glGetUniformLocation(Shader::StaticShader.ID, "time");
+      u_Resolution = glGetUniformLocation(Shader::StaticShader.ID, "res");
 
-      glUniform1i(glGetUniformLocation(shader.ID, "material"), 0);
-      glUniform1i(glGetUniformLocation(shader.ID, "mask"), 1);
-      glUniform1i(glGetUniformLocation(shader.ID, "sandstone"), 2);
-      glUniform1i(glGetUniformLocation(shader.ID, "moon"), 3);
+      glUniform1i(glGetUniformLocation(Shader::StaticShader.ID, "material"), 0);
+      glUniform1i(glGetUniformLocation(Shader::StaticShader.ID, "mask"), 1);
+      glUniform1i(glGetUniformLocation(Shader::StaticShader.ID, "sandstone"), 2);
+      glUniform1i(glGetUniformLocation(Shader::StaticShader.ID, "moon"), 3);
 
       
       glm::vec3 cameraPosition = {0.0, 0.0, -1.0};
@@ -240,13 +253,17 @@ int main()
       //camera.Update(PI / 2.0f, 0.0f, 10.0f, shader, "camMatrix");
       
       // Draw the triangle
-      sandstone->Use();
-      material->Use();
-      moon->Use();
-      mask->Use();
-      
-      triangle->Draw();
-      shader.Refresh(window);
+      //sandstone->Use();
+      //material->Use();
+      //moon->Use();
+      //mask->Use();
+      /*
+      for(Material* m : State::GetInstance().Materials){
+	if(m->Active) m->Use();
+      }
+      */
+      triangle->Draw(Shader::StaticShader, camera);
+      //shader.Refresh(window);
 
 #ifdef UI_ENABLED
       UI.Run();
@@ -259,12 +276,18 @@ int main()
   
   //cleanup
   
-  shader.Delete();
+  //shader.Delete();
   delete triangle;
+  delete vbo;
+  for (int i = 0; i <  State::GetInstance().Materials.size(); i++){
+    State::GetInstance().Materials.erase(State::GetInstance().Materials.begin() + i);
+  }
+  /*
   delete material;
   delete mask;
-  delete vbo;
-  
+  delete moon;
+  delete sandstone;
+  */
 
   
 #ifdef UI_ENABLED
@@ -338,7 +361,7 @@ void setupGLFW()
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+  glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
   glfwWindowHint(GLFW_SAMPLES, 4); // 4x MSAA
 
   std::cout << "Starting GLFW context, OpenGL " << glfwGetVersionString() << std::endl;
@@ -429,7 +452,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 void window_size_callback(GLFWwindow* window, int width, int height)
 {
-  
+    glViewport(0, 0, width, height);
 }
 
 void setupImGui(GLFWwindow* window) {

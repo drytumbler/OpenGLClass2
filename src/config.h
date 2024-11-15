@@ -54,6 +54,10 @@
 #define RECENT_DOCS_FILE "recent.ini"
 #define MAX_RECENT_DOCUMENTS 10
 
+#define MAINX (.77)
+#define SIDEX (1.-MAINX)
+
+
 int checkAndCreateFile(const std::string& filename);
 void appendToFile(const std::string &filename, const char *text);
 int saveToFile(const std::string& filePath, const char* data); 
@@ -61,3 +65,5 @@ void appendToRecentDocuments(const char *text);
 std::filesystem::path constructFullPath(const char *path, const char *name);
 std::uintmax_t getFileSize(const std::string& filePath);
 std::string expandHome(const std::string& path);
+const char* getBaseName(std::filesystem::path path, char* basename, int size);
+std::string get_file_string(const char* filepath);

@@ -8,7 +8,7 @@ layout (location = 3) in vec3 vertexNormals;
 out vec3 fragmentColor;
 out vec2 fragmentTexCoord;
 
-out vec3 vertexNormal;
+out vec3 fragmentNormals;
 out vec3 crntPos;
 
 uniform mat4 model;
@@ -17,14 +17,11 @@ uniform mat4 model;
 
 uniform mat4 camMatrix;
 
-uniform float time;
-uniform float scale;
-
-
-uniform mat3 normalMatrix;
+//uniform float time;
+//uniform float scale;
 
 void main(){
-     crntPos = vec3(5*model * vec4(vertexPos, 1.0f));
+     crntPos = vec3(model * vec4(vertexPos, 1.0f));
      gl_Position = camMatrix * vec4(crntPos, 1.0f);
      //fragmentColor = vertexColor;
      //fragmentColor = colors[gl_VertexID];
@@ -32,6 +29,6 @@ void main(){
      fragmentTexCoord = texPos;
      //vertexNormal = normalize(model*vec4(vertexNormals, 0.0)).xyz;
      //if (fract(time*0.5) > 0.5)
-       vertexNormal = normalize(normalMatrix * vertexNormals);
+     fragmentNormals = normalize(model * vec4(vertexNormals, 0.)).xyz;
 
 }

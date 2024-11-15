@@ -20,9 +20,9 @@ struct TextEditorBuffer
   bool        Open;                      // Set when open (we keep an array of all available documents to simplify demo code!)
   bool        OpenPrev;                  // Copy of Open from last update.
   bool        Dirty;                     // Set when the document has been modified
-  bool        Popup;
+  bool        Popup = true;
   ImVec4      Color;                     // Arbitrary color variable for document
-  char        Path[128];                 // The full path
+  char        Path[128];                 // The full path?
   char        Data[TEXT_BUFFER_SIZE];    // Copy of the content
 
   // Constructor

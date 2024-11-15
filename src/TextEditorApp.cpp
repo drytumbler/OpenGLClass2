@@ -4,14 +4,18 @@
 // [SECTION] Example App: Documents Handling / ShowTextEditorApp()
 //-----------------------------------------------------------------------------
 
-#include "TextEditorApp.h"
+#include "ui.h"
+//#include "TextEditorApp.h"
+//#include "TextEditorBuffer.h"
+#include "config.h"
 #include "imgui/imgui.h"
+#include "imgui/imgui_internal.h"
 #include <vector>
 
 ImFont* TextEditorApp::CodeFont = nullptr;
 
 TextEditorApp::TextEditorApp(){
-  Documents.push_back(TextEditorBuffer(0, "Empty Shader", "#version 330 core\n\nvoid main()\n{\n\n\tgl_FragColor = vec4( vec3( 0.0, 0.0, 0.0 ), 1.0 ); \n}\n", true));
+  //Documents.push_back(TextEditorBuffer(0, "Empty Shader", "#version 330 core\n\nvoid main()\n{\n\n\tgl_FragColor = vec4( vec3( 0.0, 0.0, 0.0 ), 1.0 ); \n}\n", true));
 }
 
 void TextEditorApp::GetTabName(TextEditorBuffer* doc, char* out_buf, size_t out_buf_size){
@@ -92,28 +96,28 @@ void TextEditorApp::DisplayDocContents(TextEditorBuffer* doc){
   ImGui::ColorEdit3("color", &doc->Color.x);  // Useful to test drag and drop and hold-dragged-to-open-tab behavior.
   ImGui::PopID();
 }
-void TextEditorApp::DisplayMenuBar() {
+void TextEditorApp::DisplayMenuBar(int open_count) {
   // Menu
   if (ImGui::BeginMenuBar()){
     if (ImGui::BeginMenu("File")){
-      int open_count = 0;
-      for (TextEditorBuffer& doc : Documents)
-	open_count += doc.Open ? 1 : 0;
 	    
       if (ImGui::MenuItem("Open...")){
 	OpenDocument();
-	            
+	ShowBufferList = false;
       }
-      if (ImGui::BeginMenu("Recent", open_count < Documents.Size)){
+      if (ImGui::BeginMenu("Project", open_count > 0)){
 	for (TextEditorBuffer& doc : Documents)
-	  if (!doc.Open && ImGui::MenuItem(doc.Name))
+	  if (ImGui::MenuItem(doc.Name)){
 	    doc.DoOpen();
+	    ShowBufferList = false;
+	    doc.Popup = true;
+	  }
 	ImGui::EndMenu();
       }
-      if (ImGui::MenuItem("Close All Documents", NULL, false, open_count > 0))
+      if (!ShowBufferList && ImGui::MenuItem("Close All Tabs", NULL, false, open_count > 0))
 	for (TextEditorBuffer& doc : Documents)
 	  CloseQueue.push_back(&doc);
-      if (ImGui::MenuItem("Exit"))
+      if (ImGui::MenuItem("Hide"))
 	Visible = false;
       ImGui::EndMenu();
     }
@@ -148,19 +152,30 @@ void TextEditorApp::NotifyOfDocumentsClosedElsewhere()
 
 int TextEditorApp::RequestDocumentID() { return Documents.Size; }
 
-void TextEditorApp::Show() {
+void TextEditorApp::Show(ImVec2 space) {
   // Options
   static bool opt_reorderable = true;
   static ImGuiTabBarFlags opt_fitting_flags = ImGuiTabBarFlags_FittingPolicyDefault_;
+  
+  float menuHeight = ImGui::GetFrameHeight();
+  ImVec2 size = ImVec2(space.x * MAINX, space.y); //space.y has menuHeight already deducted
+  ImVec2 pos = ImVec2(0.0, menuHeight);
+  ImGui::SetNextWindowSize(size);
+  ImGui::SetNextWindowPos(pos);
 
-  bool window_contents_visible = ImGui::Begin("Shader Editor", &Visible, ImGuiWindowFlags_MenuBar|ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoScrollWithMouse);
+  bool window_contents_visible = ImGui::Begin("Shader Editor", &Visible, ImGuiWindowFlags_MenuBar|ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoScrollWithMouse);// |ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoScrollWithMouse
+
   if (!window_contents_visible)
     {
       ImGui::End();
       return;
     }
 
-  DisplayMenuBar();
+  int open_count = 0;
+  for (TextEditorBuffer& doc : Documents)
+    open_count += doc.Open ? 1 : 0;
+  DisplayMenuBar(open_count);
+
   ImGui::Separator();
 
   // Submit Tab Bar and Tabs
@@ -170,10 +185,10 @@ void TextEditorApp::Show() {
     if (ImGui::BeginTabBar("##tabs", tab_bar_flags))
       {
 	if (opt_reorderable) NotifyOfDocumentsClosedElsewhere();
-	if(ImGui::TabItemButton(!ShowBufferList ? "LIST" : "EDITOR", ImGuiButtonFlags_None)){
+	if(ImGui::TabItemButton(!ShowBufferList ? "BROWSER" : "EDITOR", ImGuiButtonFlags_None)){
 	  ShowBufferList = !ShowBufferList;
 #ifdef DEBUG_ENABLED
-	  puts("LIST pressed");
+	  puts(ShowBufferList ? "BROWSER" : "EDITOR");
 	  puts(std::to_string(ShowBufferList).c_str());
 #endif
 	  ImGui::EndTabBar();
@@ -209,26 +224,58 @@ void TextEditorApp::Show() {
 	  }
 	  // Show buffer list
 	  else {
-	    static bool refresh = true;
-	    float x = ImGui::GetContentRegionAvail().x;
-	    float y = ImGui::GetTextLineHeight() + 2.;
-	    ImVec2 size = ImVec2(x, y);
-	    
-	    static std::filesystem::path dir{expandHome(DEFAULT_LOAD_PATH)};
-	    ImGui::PushFont(CodeFont);
-	    if (CustomButton("./\t(refresh)", size)) refresh = true;
-	    if (CustomButton("../\t(up directory)", size)) {
-	      dir = dir.parent_path();
-	      refresh = true;
+	    if(ImGui::TabItemButton("TEXTURES", ImGuiButtonFlags_None)) {
+	      ui::Texter.Visible = true;
 	    }
-	    ImGui::Separator();
+	    if(ImGui::TabItemButton("MESHES", ImGuiButtonFlags_None));
+	    if(ImGui::TabItemButton("LAYOUT", ImGuiButtonFlags_None));
+
+	    float x = ImGui::GetContentRegionAvail().x;
+	    float y = ImGui::GetTextLineHeightWithSpacing();
+	    ImVec2 entrySize = ImVec2(x, y);
+
+	    ImVec2 pos = ImGui::GetItemRectMin();
+	    ImVec2 pos_end = ImGui::GetItemRectMax();
+	    ImVec2 entrySizeWithSpacing = ImVec2(pos_end.x - pos.x, pos_end.y - pos.y + 2.);
+	    
+	    static std::filesystem::path dir = DEFAULT_LOAD_PATH;
+	    //if (ui::Refresh) dir = ui::GetBrowserPath();
+	    ImGui::PushFont(CodeFont);
+	    //ui::SetBrowserPath(dir);
+	    
+	    ImGui::BeginChild("browser", ImVec2(0, ImGui::GetContentRegionAvail().y / 2.), ImGuiChildFlags_ResizeY, ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoScrollWithMouse);
+	    if(ImGui::IsMouseDown(0) && (ImGui::GetContentRegionAvail().y > (size.y - 150) ))
+	      ImGui::SetWindowSize(ImVec2(0, size.y - 150));
+	    
+          ImGui::BeginChild("nav", ImVec2(0, entrySizeWithSpacing.y * 2.), 0, ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoScrollWithMouse);	    
+	    if (CustomButton("./\t(refresh)", entrySize)) {
+	      //	      selected = dir;
+	      ui::Refresh();
+	    }
+	    if (CustomButton("../\t(up directory)", entrySize)) {
+	      dir = dir.parent_path();
+	      ui::SetBrowserPath(dir);
+	      //	      selected = dir;
+	      //ui::Refresh();
+	    }
+	  ImGui::EndChild();
+
+            ImGui::Separator();
 
 	    static std::vector<std::filesystem::path> dirs;
 	    static std::vector<std::filesystem::path> files;
+	    static std::filesystem::path selected;
+	    ImGui::Text(ui::BrowserPath.c_str());
+	    //static std::vector<std::filesystem::path> visited;
 	    
-	    static std::vector<std::filesystem::path> visited;
-	    
-	    if(refresh){
+	    if(!ui::EditorReady){
+	      static bool startFlag = true;
+	      if (startFlag){
+		startFlag = false;
+		ui::SetBrowserPath(dir);
+	      }
+	      dir = ui::GetBrowserPath();
+	      if (!dir.has_extension() && ((std::filesystem::directory_entry)dir).is_directory() && !dir.empty()){
 	      dirs.clear();
 	      files.clear();
 	      for(auto const& dir_entry : std::filesystem::directory_iterator{dir})
@@ -237,32 +284,81 @@ void TextEditorApp::Show() {
 	      for(auto const& dir_entry : std::filesystem::directory_iterator{dir})
 		if(dir_entry.is_regular_file())
 		  files.push_back(dir_entry);
-	      refresh = false;
+	      }
+	      ui::EditorReady = true;
 	    }
-	    ImU32 dirColor = IM_COL32(127,255,130,100);
+
+            ImU32 dirColor = IM_COL32(127,255,130,100);
+
+	    ImGui::BeginChild("dirs", ImVec2(0, entrySizeWithSpacing.y * fmin(7., dirs.size())), ((dirs.size() > 5) ? 0 : ImGuiChildFlags_AutoResizeY) | ImGuiChildFlags_ResizeY, 0);
+	    
             for(std::filesystem::path dir_entry : dirs){
 	      std::string label = dir_entry.filename().c_str();
 	      label += "/";
-	      if(CustomButton(label.c_str(), size, dirColor)){
-		dir = dir_entry;
-		refresh = true;
+	      if(CustomButton(label.c_str(), entrySize, dirColor)){
+		dir = dir_entry.c_str();
+		puts(dir.c_str());
+		ui::SetBrowserPath(dir);
+		files.clear();
+		selected = dir;
+		for(auto const& dir_entry : std::filesystem::directory_iterator{dir})
+		  if(dir_entry.is_regular_file())
+		    files.push_back(dir_entry);
+		//ui::Refresh = true;
 	      }
 	    }
+	    // if(ui::Refresh && strcmp(dir.c_str(), ui::GetBrowserPath().c_str()) != 0)
+	    //  ui::SetBrowserPath(dir);
+	  ImGui::EndChild();
 	    
 	    ImGui::Separator();
 
-	    for(std::filesystem::path dir_entry : files)
-	      CustomButton(dir_entry.filename().c_str(), size);
-
-	    ImGui::Separator();
+	    ImGui::BeginChild("files", ImVec2(0, 0));
+            for(std::filesystem::path dir_entry : files)
+	      if(CustomButton(dir_entry.filename().c_str(), entrySize)) ui::SetBrowserPath(dir_entry);
+	  ImGui::EndChild();
+	    
 
 	    ImGui::PopFont();
-	  } 
+
+	ImGui::EndChild();
+
+	ImGui::Separator();
+	    
+	ImGui::BeginChild("static");
+	    if(ImGui::Button("INFO")) State::GetInstance().Report();
+	    ImGui::Text("STATIC");
+	    ImGui::Text(selected.c_str());
+
+	  if (ImGui::BeginTable("##bg", 1, ImGuiTableFlags_RowBg)){
+	    for (auto doc : Documents){
+	      ImGui::TableNextRow();
+	      ImGui::Text(doc.Name);
+	    }
+	  }
+	  ImGui::EndTable();
+	  
+	  
+	  if (ImGui::BeginTable("table1", 3, ImGuiTableFlags_HighlightHoveredColumn))
+	    {
+	      for (int row = 0; row < 4; row++)
+		{
+		  ImGui::TableNextRow();
+		  for (int column = 0; column < 3; column++)
+		    {
+		      ImGui::TableSetColumnIndex(column);
+		      ImGui::Text("Row %d Column %d", row, column);
+		    }
+		}
+	      ImGui::EndTable();
+	    }
+      ImGui::EndChild();
+	  }
 	  ImGui::EndTabBar();
 	}
       }
   }
-
+  
   // Display renaming UI
   if (RenamingDoc != NULL){
     if (RenamingStarted)
@@ -354,6 +450,15 @@ void TextEditorApp::OpenDocument() {
       std::cerr << "Failed to open file: " << path << std::endl;
     }
     else {
+      for(TextEditorBuffer& doc : Documents){
+	doc.Popup = false;
+	if(!strcmp(constructFullPath(doc.Path, doc.Name).c_str(), path)){
+	  doc.Popup = true;
+	  doc.DoOpen();
+	  return;
+	}
+      }
+      
       std::string line;
       while(std::getline(file, line)){
 	data += line;

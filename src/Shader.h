@@ -14,13 +14,15 @@ unsigned int makeShaderMod(const std::string& filepath, unsigned int shader_type
 
 class Shader {
 public:
+  bool Active = false;
   GLuint ID;
   Shader(const std::string &vertex_filepath, const std::string &fragment_filepath);
   Shader(const char* vertData, const char* fragData, bool rawFlag);
   Shader();
   void Activate();
   void Delete();
-  void Refresh(GLFWwindow* window);
+  void Refresh();
+  void Report() { std::cout <<( (this == &StaticShader) ? "StaticShader " : "Shader" ) << ID << " reporting!" << std::endl; }
 
   std::string GetVertexShaderPath();
   std::string GetFragmentShaderPath();

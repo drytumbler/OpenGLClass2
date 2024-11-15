@@ -10,7 +10,7 @@ class IBO {
  public:
   GLuint ID;
   std::vector<GLuint> indices;
-  GLsizeiptr size;
+  //GLsizeiptr size;
   IBO(const std::vector<GLuint> data);
 
   void Bind();

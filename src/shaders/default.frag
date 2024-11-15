@@ -20,6 +20,9 @@ out vec4 screenColor;
 uniform sampler2D material;
 uniform sampler2D mask;
 uniform sampler2D sandstone;
+uniform sampler2D sandstone1;
+uniform sampler2D sandstone2;
+uniform sampler2D sandstone3;
 
 uniform float scale;
 uniform float time;
@@ -137,25 +140,51 @@ float rand(vec2 co){
     return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
 }
 
+    int n = 0;
 
 void main() {
-    vec3 baseColor = texture(sandstone, fragmentTexCoord).rgb;
+    vec2 newTex = fragmentTexCoord - vec2(0.,0.12);
+    newTex *= 2.;
+    vec3 baseColor = texture(sandstone1, newTex).rgb;
     float alpha = texture(mask, fragmentTexCoord).a;
 
+    vec3 flatColor = texture(sandstone, newTex).rgb;
+
     // Calculate the light direction
+    vec3 roughness = texture(sandstone2, newTex).rgb;
+    vec3 normal = texture(sandstone3, newTex).rgb;
     vec3 toLight = normalize(lightPos - crntPos);
-    float diff = max(dot(vertexNormal, toLight), 0.0);
 
-    // Ambient light
-    float ambientStrength = 0.1; // Adjust this value as needed
-    vec3 ambient = ambientStrength * lightColor.rgb;
-
-    // Calculate the final color
-    vec3 finalColor = baseColor * (ambient + diff * lightColor.rgb);
-
-    vec2 t = ray(camPos, camDir);
+    vec2 t = ray(camPos, toLight);
     vec3 pos = camPos + camDir * t.x;
-    finalColor = vec3(t.x * 0.2) * diff;
+    float d = dlight(pos, lightPos);
+    
+    float diff = max(dot(vertexNormal, toLight), 0.0);
+    /*
+    if (fract(time*.1) > 0.25)
+      diff = max(dot(vertexNormal, toLight * roughness), 0.0);
+    if (fract(time*.1) > 0.5)
+      diff = max(dot(vertexNormal * normal, toLight), 0.0);
+    if (fract(time*.1) > 0.75)
+    */
+    diff = max(dot(vertexNormal * normal, toLight), 0.0);
+    float diff0 = max(dot(vertexNormal, toLight), 0.0);
+
+        
+    // Ambient light
+    float ambientStrength = 0.10;
+    vec3 ambient = ambientStrength * lightColor.rgb;
+    vec3 finalColor = baseColor * (ambient + diff*roughness.g);
+    // Calculate the final color
+    
+      //if (fract(time*.1) > 0.5)
+      //finalColor = baseColor * (ambient + (diff*roughness.r));
+    
+
+    //finalColor = vec3(t.x * 0.2) * diff;
     // Final output color
-    screenColor = vec4(finalColor, (1.0 - alpha) * (0.75 - alpha));
+    //screenColor = vec4(baseColor * (ambient + diff), (1.0 - alpha) * (0.75 - alpha));
+    screenColor = vec4(vec3(finalColor), 1.);
+    // if(fract(0.1 * time) > 0.5 )
+    //screenColor = vec4(vec3(flatColor) * (ambient + diff0), 1.);
 }

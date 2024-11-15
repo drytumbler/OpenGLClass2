@@ -1,13 +1,15 @@
 // TriangleMesh.cpp
 
 #include "TriangleMesh.h"
+#include "Camera.h"
+#include "State.h"
 
-TriangleMesh::TriangleMesh(std::vector<VBO*>& vbos, IBO* ibop) : VBOs(vbos), ibo(ibop){
-    
+TriangleMesh::TriangleMesh(std::vector<VBO*>& vbos, IBO*& ibop, std::vector<Material*> texp) : VBOs(vbos), ibo(ibop), TEXs(texp){
+  ID = State::GetInstance().Meshes.size();
   vao = new VAO();
   vao->Bind();
 
-  // Create and add VBOs
+  // Create VAO and add VBOs
   for(auto& vbo : vbos){
     vbo->Bind();
     for(auto& attr : vbo->attributes){
@@ -16,12 +18,12 @@ TriangleMesh::TriangleMesh(std::vector<VBO*>& vbos, IBO* ibop) : VBOs(vbos), ibo
     vbo->Unbind();
   }
   vao->Unbind();
-  vertex_count = ibo->size;
+  vertex_count = ibo->indices.size();
 
   State::GetInstance().Add(this);
 }
 
-void TriangleMesh::Draw() {
+void TriangleMesh::Draw(Shader& shader, Camera& camera) {
   for(auto& vbo : VBOs){
     vbo->Bind();
   }
@@ -35,9 +37,12 @@ TriangleMesh::~TriangleMesh() {
   glDeleteVertexArrays(1, &vao->ID);
   glDeleteBuffers(1, &ibo->ID);
 
-  delete vao;
-  delete ibo;
+  int total = State::GetInstance().Meshes.size();
+  for(int i = 0; i <  total; i++){
+    if (State::GetInstance().Meshes[i]->ID == ID) State::GetInstance().Meshes.erase(State::GetInstance().Meshes.begin() + i);
+  }
   
+  delete vao; 
 }
 
 //--------------------------
@@ -45,8 +50,10 @@ TriangleMesh::~TriangleMesh() {
 //--------------------------
 
 void TriangleMesh::Report() {
+  std::cout << "TriangleMesh reporting: OK @ " << this << std::endl;
   std::cout << "data received:" << std::endl;
   for (auto& vbo : VBOs){
+    std::cout << "VBO " << vbo->ID << ": " << vbo << std::endl;
     vbo->Bind();
     std::vector<float> readBackVertices(vbo->vertices.size());
     //glBindBuffer(GL_ARRAY_BUFFER, vbo->ID);
@@ -91,10 +98,11 @@ void TriangleMesh::Report() {
   }
   
 
-  std::vector<int> readBackIndices(ibo->size);
+  std::vector<int> readBackIndices(ibo->indices.size());
   ibo->Bind();
-  glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, ibo->size * sizeof(int), readBackIndices.data());
+  glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, ibo->indices.size() * sizeof(int), readBackIndices.data());
   // Print read back indices
+  std::cout << "IBO " << ibo->ID << ": " << ibo << std::endl;
   std::cout << "Read back indices from IBO:" << std::endl;
   for (size_t i = 0; i < readBackIndices.size(); i += 3) {
     std::cout << "("
