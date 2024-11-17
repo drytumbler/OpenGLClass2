@@ -24,7 +24,7 @@ uniform float scale;
 uniform mat3 normalMatrix;
 
 void main(){
-     crntPos = vec3(15. * model * vec4(vertexPos, 1.0f));
+  crntPos = vec3(1. * model * vec4(vec3(1.5, 1.0, 0.68) * vertexPos + vec3(0.0, 0.75, 0.0), 1.0f));
      gl_Position = camMatrix * vec4(crntPos, 1.0f);
      //fragmentColor = vertexColor;
      //fragmentColor = colors[gl_VertexID];

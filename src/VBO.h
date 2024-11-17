@@ -25,9 +25,8 @@ public:
 class VBO {
 public:
   GLuint ID;
-  std::vector<VertexAttribute> attributes;
   std::vector<float> vertices;
-  VBO(const std::vector<float> data, const std::vector<VertexAttribute> layout);
+  VBO(const std::vector<float> data);
   void Bind();
   void Unbind();
   void Report();

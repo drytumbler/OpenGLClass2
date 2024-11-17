@@ -88,3 +88,4 @@ std::string expandHome(const std::string& path);
 const char* getBaseName(std::filesystem::path path, char* basename, int size);
 std::string get_file_string(const char* filepath);
 unsigned int extension_filter(std::filesystem::path file);
+bool isInteger(const std::string & s);

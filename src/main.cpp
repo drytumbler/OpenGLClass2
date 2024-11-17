@@ -140,29 +140,18 @@ int main()
     VertexAttribute(3, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*) (8 * sizeof(float)), false),
   };
   
-  VBO* vbo = new VBO(vertices, attributes);
+  VBO* vbo = new VBO(vertices);
   IBO* ibo = new IBO(indices);
   
-  VBO* lightVBO = new VBO(lightVertices, lightAttributes);
+  VBO* lightVBO = new VBO(lightVertices);
   IBO* lightIBO = new IBO(lightIndices);
 
-  VBO* planeVBO = new VBO(planeVertices, attributes);
+  VBO* planeVBO = new VBO(planeVertices);
   IBO* planeIBO = new IBO(planeIndices);
-  
-  std::vector<VBO*> VBOs;
-  VBOs.push_back(vbo);
-  
-  std::vector<VBO*> lightVBOs;
-  lightVBOs.push_back(lightVBO);
-
-  
-  std::vector<VBO*> planeVBOs;
-  planeVBOs.push_back(planeVBO);
-
-  
-  TriangleMesh* triangle = new TriangleMesh(VBOs, ibo, std::vector<Material*> { sandstone1, sandstone2, sandstone3 }); // it's a square!
-  TriangleMesh* cube = new TriangleMesh(lightVBOs, lightIBO, std::vector<Material*> {});
-  TriangleMesh* plane = new TriangleMesh(planeVBOs, planeIBO, std::vector<Material*> { beach1, beach2, beach3 });
+ 
+  TriangleMesh* triangle = new TriangleMesh(vbo, attributes, ibo); // it's a square!
+  TriangleMesh* cube = new TriangleMesh(lightVBO, lightAttributes, lightIBO);
+  TriangleMesh* plane = new TriangleMesh(planeVBO, attributes, planeIBO);
 #ifdef DEBUG_ENABLED
   triangle->Report();
   cube->Report();
@@ -188,7 +177,7 @@ int main()
   
   // setup models
 
-  Model* model = new Model("../src/models/utahpot.tris");
+  Model* model = new Model("../src/models/teapot_bezier2.tris");
 
   
   glm::vec4 lightColor = glm::vec4(0.97f, 1.0f, 1.0f, 1.0f);
@@ -312,7 +301,8 @@ int main()
       sandstone3->Use();
 
       
-      triangle->Draw(shader, camera);
+      //      triangle->Draw(shader, camera);
+      model->Draw(shader, camera);
 
       planeShader.Activate();
       glUniform1i(glGetUniformLocation(planeShader.ID, "beach1"), 6);

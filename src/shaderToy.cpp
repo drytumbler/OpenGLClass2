@@ -110,13 +110,10 @@ int main()
   camera.setMouseVector(glm::vec3(-1.0,1.0,1.0));
 
   // Create buffers
-  VBO* vbo = new VBO(vertices, attributes);
+  VBO* vbo = new VBO(vertices);
   IBO* ibo = new IBO(indices);
-  // Gather VBOs (if more then one)
-  std::vector<VBO*> VBOs;
-  VBOs.push_back(vbo);
   
-  TriangleMesh* triangle = new TriangleMesh(VBOs, ibo, std::vector<Material*> {}); // it's a square!
+  TriangleMesh* triangle = new TriangleMesh(vbo, attributes, ibo); // it's a square!
   #ifdef DEBUG_ENABLED
   triangle->Report();
   #endif

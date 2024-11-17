@@ -41,11 +41,7 @@ void main() {
     // else
     // diffuseStrength = max(0.0, dot(normalize(lightPos), normal));
   vec3 diffuse = diffuseStrength * lightColor.rgb;
-  // specular
-  vec3 reflection = normalize(reflect(-lightPos, normal));
-  float specularStrength = max(0.0, dot(normalize(camPos), reflection));
-  specularStrength = pow(specularStrength, 2);
-  vec3 specular = specularStrength * lightColor.rgb;
+
   
   // lighting = ambient + diffuse + specular
   vec3 lighting = ambient + diffuse;
@@ -54,6 +50,17 @@ void main() {
   vec3 modelColor = texture(sandstone1, tex).rgb;
   //vec3 modelColor = vec3(1.0, 0.6, 0.3);
   vec3 finalColor = modelColor * lighting;
-  
-  gl_FragColor = vec4(modelColor*lighting, 1.0);
+  vec3 dx = dFdx(crntPos.xyz);
+  vec3 dy = dFdy(crntPos.xyz);
+  vec3 normal2 = normalize(cross(dx, dy));
+  float d = max(0.0, dot(lightPos, normal2));
+  modelColor = vec3(0.85,0.75,0.2);
+  d = -1. + 0.1 * d ;
+
+    // specular
+  vec3 reflection = normalize(reflect(-lightPos, normal2));
+  float specularStrength = max(0.0, dot(normalize(crntPos), reflection));
+  specularStrength = pow(specularStrength, 32);
+  vec3 specular = specularStrength * lightColor.rgb;
+  gl_FragColor = vec4(modelColor *  (0.5*d + specular), 1.0);
 }

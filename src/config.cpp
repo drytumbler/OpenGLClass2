@@ -136,3 +136,13 @@ unsigned int extension_filter(std::filesystem::path path) {
   
     return  0xFF;  // return the result or 0xFF if the file has no extension or unknown extension
 }
+
+bool isInteger(const std::string & s)
+{
+   if(s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+'))) return false;
+
+   char * p;
+   strtol(s.c_str(), &p, 10);
+
+   return (*p == 0);
+}

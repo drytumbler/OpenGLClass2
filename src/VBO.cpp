@@ -3,8 +3,8 @@
 #include "VBO.h"
 #include "State.h"
 
-VBO::VBO(const std::vector<float> data, const std::vector<VertexAttribute> layout)
-  :attributes(layout), vertices(data){
+VBO::VBO(const std::vector<float> data)
+  : vertices(data){
   glGenBuffers(1, &ID);
   glBindBuffer(GL_ARRAY_BUFFER, ID);
 

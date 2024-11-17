@@ -4,19 +4,18 @@
 #include "Camera.h"
 #include "State.h"
 
-TriangleMesh::TriangleMesh(std::vector<VBO*>& vbos, IBO*& ibop, std::vector<Material*> texp) : VBOs(vbos), ibo(ibop), TEXs(texp){
+TriangleMesh::TriangleMesh(VBO* vbo, const std::vector<VertexAttribute> attributes, IBO* ibo) : vbo(vbo), Attributes(attributes), ibo(ibo){
   ID = State::GetInstance().Meshes.size();
-  vao = new VAO();
+  vao = new VAO(*vbo, attributes);
   vao->Bind();
 
-  // Create VAO and add VBOs
-  for(auto& vbo : vbos){
+  // Create VAO and add VBO
     vbo->Bind();
-    for(auto& attr : vbo->attributes){
+    for(auto& attr : attributes){
       vao->LinkAttrib(*vbo, attr.index, attr.size, attr.type, attr.normalized, attr.stride, attr.offset);
     }
     vbo->Unbind();
-  }
+
   vao->Unbind();
   vertex_count = ibo->indices.size();
 
@@ -24,9 +23,7 @@ TriangleMesh::TriangleMesh(std::vector<VBO*>& vbos, IBO*& ibop, std::vector<Mate
 }
 
 void TriangleMesh::Draw(Shader& shader, Camera& camera) {
-  for(auto& vbo : VBOs){
-    vbo->Bind();
-  }
+  vbo->Bind();
   vao->Bind();
   ibo->Bind();
     //glDrawArrays(GL_TRIANGLES, 0, vertex_count);
@@ -52,7 +49,7 @@ TriangleMesh::~TriangleMesh() {
 void TriangleMesh::Report() {
   std::cout << "TriangleMesh reporting: OK @ " << this << std::endl;
   std::cout << "data received:" << std::endl;
-  for (auto& vbo : VBOs){
+
     std::cout << "VBO " << vbo->ID << ": " << vbo << std::endl;
     vbo->Bind();
     std::vector<float> readBackVertices(vbo->vertices.size());
@@ -65,11 +62,11 @@ void TriangleMesh::Report() {
     //inc = vbo->attributes[0].size;
     int loop = 0;
     int index = 0;
-    int num_attr = vbo->attributes.size();
+    int num_attr = Attributes.size();
     std::cout << "readBackvertices.size() = " << readBackVertices.size() << ".\n" << std::endl;
     for (size_t i = 0; i < readBackVertices.size(); i += inc) {
       loop = loop % num_attr;
-      inc = vbo->attributes[loop++].size;
+      inc = Attributes[loop++].size;
       if (loop == 1) {
 	std::cout << "#" << index++ << " - ";
       }
@@ -95,7 +92,7 @@ void TriangleMesh::Report() {
     
     //glBindBuffer(GL_ARRAY_BUFFER, 0);
     vbo->Unbind();			     
-  }
+  
   
 
   std::vector<int> readBackIndices(ibo->indices.size());

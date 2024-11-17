@@ -15,9 +15,8 @@
 
 class TriangleMesh {
 public:
-  TriangleMesh(std::vector<VBO*>& vbos, IBO*& ibop, std::vector<Material*> texp);
+  TriangleMesh(VBO* vbo, std::vector<VertexAttribute> attributes, IBO* ibo = nullptr);
   ~TriangleMesh();
-
   void Draw(Shader& shader, Camera& camera);
 
 #ifdef DEBUG_ENABLED
@@ -26,10 +25,10 @@ public:
 
 private:
   int ID;
-  std::vector<VBO*> VBOs;
+  VBO* vbo;
   IBO* ibo;
-  std::vector<Material*> TEXs;
-
   VAO* vao;
+
+  std::vector<VertexAttribute> Attributes;
   unsigned int vertex_count;
 };
