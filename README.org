@@ -59,6 +59,115 @@ cmake -S .. -B ../build -DCMAKE_BUILD_TYPE=Debug && cmake --build ../build
 #+end_src
 
 * Changelog :exclude:
+22:14:36 | OpenGLClass2 >> tree src/
+src/
+├── ex
+│   ├── camera.cpp
+│   ├── displ_tex.cpp
+│   ├── piramid.cpp
+│   └── shaderToy.cpp
+├── fonts
+│   ├── Roboto-Medium.ttf
+│   └── SourceCodePro-Medium.ttf
+├── img
+│   ├── folder128_.png
+│   ├── folder256_.png
+│   ├── folder2.png
+│   ├── folder3.png
+│   ├── folder4.png
+│   ├── folder5.png
+│   ├── folder.png
+│   └── folder_.png
+├── models
+│   ├── teapot_bezier2.tris
+│   └── utahpot.tris
+├── shaders
+│   ├── old
+│   │   ├── fragment.shader
+│   │   └── vertex.shader
+│   ├── toy
+│   │   ├── circles2.frag
+│   │   ├── lines2d.frag
+│   │   ├── raytracer.frag
+│   │   └── shroom.frag
+│   ├── default.frag
+│   ├── default.vert
+│   ├── disp_tex.frag
+│   ├── disp_tex.vert
+│   ├── fragment.shader
+│   ├── light.frag
+│   ├── light.vert
+│   ├── new.frag
+│   ├── phong.frag
+│   ├── plane.frag
+│   ├── plane.vert
+│   ├── shadertoy.frag
+│   ├── shadertoy.vert
+│   └── vertex.shader
+├── test
+│   ├── tris
+│   └── tris.cpp
+├── textures
+│   ├── added
+│   ├── garbage
+│   ├── lenna.png
+│   ├── mask.png
+│   ├── moon.jpg
+│   ├── moon.png
+│   ├── sandstone.jpg
+│   ├── sandstone.png
+│   ├── Smooth_Beach_Sand_baseColor.png
+│   ├── Smooth_Beach_Sand_mask.png
+│   ├── Smooth_Beach_Sand_normal.png
+│   ├── TH_Yellow_Bricks_baseColor.png
+│   ├── TH_Yellow_Bricks_normal.png
+│   └── TH_Yellow_Bricks_roughness.png
+├── Camera.cpp
+├── Camera.h
+├── config.cpp
+├── config.h
+├── disp_tex.cpp
+├── FontManager.cpp
+├── FontManager.h
+├── functions.h
+├── glad.c
+├── IBO.cpp
+├── IBO.h
+├── main.cpp
+├── Material.cpp
+├── Material.h
+├── math.cpp
+├── math.h
+├── Model.cpp
+├── Model.h
+├── prEditor.cpp
+├── Primitive.cpp
+├── Primitive.h
+├── pyramid_ex.cpp
+├── Shader.cpp
+├── Shader.h
+├── shaderInvader.h
+├── shaderToy.cpp
+├── sphere
+├── Sphere.cpp
+├── Sphere.h
+├── State.cpp
+├── State.h
+├── TextEditorApp.cpp
+├── TextEditorApp.h
+├── TextEditorBuffer.cpp
+├── TextEditorBuffer.h
+├── TextureBrowser.cpp
+├── TextureBrowser.h
+├── TriangleMesh.cpp
+├── TriangleMesh.h
+├── ui.cpp
+├── ui.h
+├── VAO.cpp
+├── VAO.h
+├── VBO.cpp
+└── VBO.h
+
 ├── include
 │   ├── glad
 │   │   └── glad.h
