@@ -11,12 +11,13 @@
 #include "Shader.h"
 #include "State.h"
 
+
 // #include <algorithm>
 
 struct MyColors {
-  ImU32 DefaultButtonColor;
-  ImU32 HoveredButtonColor;
-  ImU32 ActiveButtonColor;
+  ImU32 DefaultButtonColor = IM_COL32(255, 255, 255, 255);
+  ImU32 HoveredButtonColor = IM_COL32(255, 255, 255, 255);
+  ImU32 ActiveButtonColor = IM_COL32(255, 255, 255, 255);
   MyColors(){  }
   void SetColorsToDefault(){
     if(ImGui::GetCurrentContext() == nullptr) return;
@@ -39,7 +40,6 @@ struct TextEditorApp
   TextEditorBuffer*             RenamingDoc = NULL;
   bool                          RenamingStarted = false;
   bool ShowBufferList = true;
-  MyColors Colors;
   std::string loadPath = expandHome(DEFAULT_LOAD_PATH);
     
   TextEditorApp();
@@ -52,10 +52,11 @@ struct TextEditorApp
   void Show(ImVec2 space);
   void OpenDocument();
   void AppendToRecentDocuments(const char* text);
-  bool CustomButton(const char* label, const ImVec2& size, ImU32 textcolor = IM_COL32(255,255,255,255));
 public:
+  MyColors Colors;
   bool Visible = true;  
   static ImFont* CodeFont;
   static void LoadFonts();
 };
+
 

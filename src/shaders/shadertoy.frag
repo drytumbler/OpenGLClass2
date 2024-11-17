@@ -9,7 +9,7 @@
 #define  black		vec3( 0.0, 0.0, 0.0 )
 
 #define SHARPNESS 0.005
-#define ITERATIONS 16
+#define ITERATIONS 128
 #define MIN_DIST 0.005
 #define MAX_DIST 128.0
 #define MAX_SHADOW_DIST 50.0
@@ -241,3 +241,4 @@ void main(){
   gl_FragColor = vec4(col,  1.0 );
   gl_FragColor += 0.82*vec4(uv.x, uv.y, pos.z, 1.0);
 }
+

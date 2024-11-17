@@ -1,5 +1,5 @@
 // ui.h
-
+#pragma once
 #include <cstddef>
 #define UI_MAIN_BAR_MENU_1 "Menu"
 #include "config.h"

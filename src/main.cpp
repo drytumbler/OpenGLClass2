@@ -11,6 +11,7 @@
 #include "Shader.h"
 #include "VBO.h"
 #include "Camera.h"
+#include "Model.h"
 
 //#include "math.h"
 
@@ -111,7 +112,7 @@ int main()
 
   std::vector<float> planeVertices = {
     -15., 0.1, 15., 1., 1., 1., -1., -1., 0., 1., 0.,
-    15., 0.-1, 15., 1., 1., 1., 1., -1., 0., 1., 0.,
+    15., -0.1, 15., 1., 1., 1., 1., -1., 0., 1., 0.,
     15., 0.1, -15., 1., 1., 1., 1., 1., 0., 1., 0.,
     -15., -0.1, -15., 1., 1., 1., -1., 1., 0., 1., 0.
   };
@@ -119,7 +120,7 @@ int main()
 
   setupGLFW();
   GLFWwindow *window = createWindow();
-
+  glfwSetWindowPos(window, 1920-500, 1080-500);
   
   Material* material = new Material("../src/textures/lenna.png");
   Material* mask = new Material("../src/textures/mask.png");
@@ -171,7 +172,7 @@ int main()
   //setup shaders
   Shader shader(
 		"../src/shaders/default.vert",
-		"../src/shaders/default.frag"
+		"../src/shaders/phong.frag"
 		);
 
   Shader lightShader(
@@ -187,8 +188,11 @@ int main()
   
   // setup models
 
-  glm::vec4 lightColor = glm::vec4(0.9f, 1.0f, 1.0f, 1.0f);
-  glm::vec3 lightPos = glm::vec3(1.7f, 3.05f, 2.5f);
+  Model* model = new Model("../src/models/utahpot.tris");
+
+  
+  glm::vec4 lightColor = glm::vec4(0.97f, 1.0f, 1.0f, 1.0f);
+  glm::vec3 lightPos = glm::vec3(10.7f, 30.05f, 20.5f);
   glm::mat4 lightModel = glm::mat4(1.0f);
   lightModel = glm::translate(lightModel, lightPos);
 
@@ -243,7 +247,7 @@ int main()
   float time=0.0f, scale=1.0f;
   GLuint u_Time, u_Scale;
   u_Time = glGetUniformLocation(shader.ID, "time");
-  u_Scale = glGetUniformLocation(shader.ID, "scale");
+
   
   // Game loop
 
@@ -257,20 +261,24 @@ int main()
       camera.Inputs(window);
        
       time = (float)glfwGetTime();
-      scale = sin(time);
-  
-      glClearColor(0.019f, 0.0185f, 0.0165f, 1.0f);
-      //blightColor = glm::vec4(1.0f * sin(time), 0.9f * cos(time), 0.7f, 1.0f);
+      //printf("%f\n", time);
+
+      float f = (0.5 + 0.5 * sin(time * 0.25));
+      glClearColor(1.1 * f * lightColor.r * .5, f*f * lightColor.g * .5, f*f * lightColor.b * .5, lightColor.a );
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       pyramidModel = glm::rotate(pyramidModel, glm::radians(.02f), glm::vec3(0.0f,1.0f,0.0f));
       normalMatrix = glm::transpose(glm::inverse(glm::mat3(pyramidModel)));
-
+ 
       //lightModel = glm::mat4(1.0f);
       //lightModel = glm::translate(lightModel, -lightPos);
       //lightModel = glm::rotate(lightModel, glm::radians(1.0f), glm::vec3(0.0f,1.0f,0.0f));
-      //lightModel = glm::translate(lightModel, lightPos);
 
+      lightModel = glm::translate(lightModel, -lightPos);
+      lightPos = glm::vec3(10.5, 30.7 * (0.5 + 0.5 * sin(time * 0.25)), 15.8);
+      lightModel = glm::translate(lightModel, lightPos);
+      lightColor = glm::vec4(0.8, 0.9f * pow((0.8 + 0.2 * sin(time * 0.25)), .3), 0.9f * pow((0.65 + 0.35 * sin(time * 0.25)), .6), 1.0f);
+      //std::cout << "(" << lightPos.x << "," << lightPos.y << "," <<  lightPos.z << ")" << std::endl;
       // Apply the shader
       shader.Activate();
       glUniform1i(glGetUniformLocation(shader.ID, "material"), 0);
@@ -282,14 +290,15 @@ int main()
       
       glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(pyramidModel));
       glUniformMatrix3fv(glGetUniformLocation(shader.ID, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(normalMatrix));
+      glUniform3fv(glGetUniformLocation(shader.ID, "lightPos"), 1, glm::value_ptr(lightPos));
       glUniform4fv(glGetUniformLocation(shader.ID, "lightColor"), 1, glm::value_ptr(lightColor));
 
       camera.Update(PI / 4.0f, 0.1f, 100.0f);
       camera.Export(shader, "camMatrix");
       
       // Update uniforms
-      glUniform1f(u_Scale, scale);
-      glUniform1f(u_Time, time);
+
+      glUniform1f( glGetUniformLocation(shader.ID, "time"), time);
 
 
       
@@ -310,17 +319,21 @@ int main()
       glUniform1i(glGetUniformLocation(planeShader.ID, "beach2"), 7);
       glUniform1i(glGetUniformLocation(planeShader.ID, "beach3"), 8);
       glUniformMatrix4fv(glGetUniformLocation(planeShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(pyramidModel));
-
+      glUniform3fv(glGetUniformLocation(planeShader.ID, "lightPos"), 1, glm::value_ptr(lightPos));
+      glUniform4fv(glGetUniformLocation(planeShader.ID, "lightColor"), 1, glm::value_ptr(lightColor));
+      glUniform1f( glGetUniformLocation(planeShader.ID, "time"), time);
 
       beach1->Use();
       beach2->Use();
       beach3->Use();
       camera.Export(planeShader, "camMatrix");
-      plane->Draw(shader, camera);
+      plane->Draw(planeShader, camera);
       
       lightShader.Activate();
       glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(lightModel));
+      glUniform3fv(glGetUniformLocation(lightShader.ID, "lightPos"), 1,glm::value_ptr(lightPos));
       glUniform4fv(glGetUniformLocation(lightShader.ID, "lightColor"), 1, glm::value_ptr(lightColor));
+      glUniform1f( glGetUniformLocation(lightShader.ID, "time"), time);
 
       camera.Export(lightShader, "camMatrix");
       cube->Draw(lightShader, camera);
@@ -352,6 +365,8 @@ int main()
   delete beach3;
   delete plane;
 
+  delete model;
+  
   // Terminates GLFW, clearing any resources allocated by GLFW.
   glfwTerminate();
   return 0;
@@ -387,8 +402,10 @@ void setupGLFW()
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-  glfwWindowHint(GLFW_SAMPLES, 16); // 4x MSAA
+  glfwWindowHint(GLFW_SAMPLES, 4); // 4x MSAA
 
+  glfwWindowHint(GLFW_POSITION_X, 1920);
+  glfwWindowHint(GLFW_POSITION_Y, 1080);
   std::cout << "Starting GLFW context, OpenGL " << glfwGetVersionString() << std::endl;
 }
 
@@ -405,7 +422,6 @@ GLFWwindow *createWindow()
     }
 
   glfwMakeContextCurrent(window);
-
   // Set the required callback functions
   glfwSetKeyCallback(window, key_callback);
   // Set mouse callbacks

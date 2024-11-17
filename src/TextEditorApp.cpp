@@ -4,6 +4,7 @@
 // [SECTION] Example App: Documents Handling / ShowTextEditorApp()
 //-----------------------------------------------------------------------------
 
+#include "TextEditorApp.h"
 #include "ui.h"
 //#include "TextEditorApp.h"
 //#include "TextEditorBuffer.h"
@@ -13,7 +14,7 @@
 #include <vector>
 
 ImFont* TextEditorApp::CodeFont = nullptr;
-
+void showBrowser(ImVec2 size, unsigned int filter_min = 0, unsigned int filter_max = 255);
 TextEditorApp::TextEditorApp(){
   //Documents.push_back(TextEditorBuffer(0, "Empty Shader", "#version 330 core\n\nvoid main()\n{\n\n\tgl_FragColor = vec4( vec3( 0.0, 0.0, 0.0 ), 1.0 ); \n}\n", true));
 }
@@ -191,6 +192,7 @@ void TextEditorApp::Show(ImVec2 space) {
 	  puts(ShowBufferList ? "BROWSER" : "EDITOR");
 	  puts(std::to_string(ShowBufferList).c_str());
 #endif
+
 	  ImGui::EndTabBar();
 	  // Ending the tabbar when pressed prevents the button from mixing in with the tabs.
 	} else {
@@ -224,134 +226,37 @@ void TextEditorApp::Show(ImVec2 space) {
 	  }
 	  // Show buffer list
 	  else {
-	    if(ImGui::TabItemButton("TEXTURES", ImGuiButtonFlags_None)) {
+	    if(ImGui::BeginTabItem("NAVIGATE")) {
+	      showBrowser(size);
+	      ImGui::Separator();
+	      ImGui::EndTabItem();
+	    }
+	    
+	    if(ImGui::BeginTabItem("TEXTURES")) {
 	      ui::Texter.Visible = true;
-	    }
-	    if(ImGui::TabItemButton("MESHES", ImGuiButtonFlags_None));
-	    if(ImGui::TabItemButton("LAYOUT", ImGuiButtonFlags_None));
-
-	    float x = ImGui::GetContentRegionAvail().x;
-	    float y = ImGui::GetTextLineHeightWithSpacing();
-	    ImVec2 entrySize = ImVec2(x, y);
-
-	    ImVec2 pos = ImGui::GetItemRectMin();
-	    ImVec2 pos_end = ImGui::GetItemRectMax();
-	    ImVec2 entrySizeWithSpacing = ImVec2(pos_end.x - pos.x, pos_end.y - pos.y + 2.);
-	    
-	    static std::filesystem::path dir = DEFAULT_LOAD_PATH;
-	    //if (ui::Refresh) dir = ui::GetBrowserPath();
-	    ImGui::PushFont(CodeFont);
-	    //ui::SetBrowserPath(dir);
-	    
-	    ImGui::BeginChild("browser", ImVec2(0, ImGui::GetContentRegionAvail().y / 2.), ImGuiChildFlags_ResizeY, ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoScrollWithMouse);
-	    if(ImGui::IsMouseDown(0) && (ImGui::GetContentRegionAvail().y > (size.y - 150) ))
-	      ImGui::SetWindowSize(ImVec2(0, size.y - 150));
-	    
-          ImGui::BeginChild("nav", ImVec2(0, entrySizeWithSpacing.y * 2.), 0, ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoScrollWithMouse);	    
-	    if (CustomButton("./\t(refresh)", entrySize)) {
-	      //	      selected = dir;
-	      ui::Refresh();
-	    }
-	    if (CustomButton("../\t(up directory)", entrySize)) {
-	      dir = dir.parent_path();
-	      ui::SetBrowserPath(dir);
-	      //	      selected = dir;
-	      //ui::Refresh();
-	    }
-	  ImGui::EndChild();
-
-            ImGui::Separator();
-
-	    static std::vector<std::filesystem::path> dirs;
-	    static std::vector<std::filesystem::path> files;
-	    static std::filesystem::path selected;
-	    ImGui::Text(ui::BrowserPath.c_str());
-	    //static std::vector<std::filesystem::path> visited;
-	    
-	    if(!ui::EditorReady){
-	      static bool startFlag = true;
-	      if (startFlag){
-		startFlag = false;
-		ui::SetBrowserPath(dir);
-	      }
-	      dir = ui::GetBrowserPath();
-	      if (!dir.has_extension() && ((std::filesystem::directory_entry)dir).is_directory() && !dir.empty()){
-	      dirs.clear();
-	      files.clear();
-	      for(auto const& dir_entry : std::filesystem::directory_iterator{dir})
-		if(dir_entry.is_directory())
-		  dirs.push_back(dir_entry);
-	      for(auto const& dir_entry : std::filesystem::directory_iterator{dir})
-		if(dir_entry.is_regular_file())
-		  files.push_back(dir_entry);
-	      }
-	      ui::EditorReady = true;
+	      ui::SetBrowserPath(TEXTURES);
+	      ImGui::EndTabItem();
 	    }
 
-            ImU32 dirColor = IM_COL32(127,255,130,100);
-
-	    ImGui::BeginChild("dirs", ImVec2(0, entrySizeWithSpacing.y * fmin(7., dirs.size())), ((dirs.size() > 5) ? 0 : ImGuiChildFlags_AutoResizeY) | ImGuiChildFlags_ResizeY, 0);
-	    
-            for(std::filesystem::path dir_entry : dirs){
-	      std::string label = dir_entry.filename().c_str();
-	      label += "/";
-	      if(CustomButton(label.c_str(), entrySize, dirColor)){
-		dir = dir_entry.c_str();
-		puts(dir.c_str());
-		ui::SetBrowserPath(dir);
-		files.clear();
-		selected = dir;
-		for(auto const& dir_entry : std::filesystem::directory_iterator{dir})
-		  if(dir_entry.is_regular_file())
-		    files.push_back(dir_entry);
-		//ui::Refresh = true;
-	      }
+            if(ImGui::BeginTabItem("MESHES")) {
+	      ui::SetBrowserPath(MESHES);
+	      ImGui::EndTabItem();
 	    }
-	    // if(ui::Refresh && strcmp(dir.c_str(), ui::GetBrowserPath().c_str()) != 0)
-	    //  ui::SetBrowserPath(dir);
-	  ImGui::EndChild();
-	    
-	    ImGui::Separator();
+	    if(ImGui::BeginTabItem("LAYOUT")) {
+	      ui::SetBrowserPath(SHADERS);
+	      ImGui::EndTabItem();
+	    }
 
-	    ImGui::BeginChild("files", ImVec2(0, 0));
-            for(std::filesystem::path dir_entry : files)
-	      if(CustomButton(dir_entry.filename().c_str(), entrySize)) ui::SetBrowserPath(dir_entry);
-	  ImGui::EndChild();
-	    
-
-	    ImGui::PopFont();
-
-	ImGui::EndChild();
-
-	ImGui::Separator();
+	  
 	    
 	ImGui::BeginChild("static");
 	    if(ImGui::Button("INFO")) State::GetInstance().Report();
-	    ImGui::Text("STATIC");
-	    ImGui::Text(selected.c_str());
-
-	  if (ImGui::BeginTable("##bg", 1, ImGuiTableFlags_RowBg)){
-	    for (auto doc : Documents){
-	      ImGui::TableNextRow();
-	      ImGui::Text(doc.Name);
-	    }
-	  }
-	  ImGui::EndTable();
-	  
-	  
-	  if (ImGui::BeginTable("table1", 3, ImGuiTableFlags_HighlightHoveredColumn))
-	    {
-	      for (int row = 0; row < 4; row++)
-		{
-		  ImGui::TableNextRow();
-		  for (int column = 0; column < 3; column++)
-		    {
-		      ImGui::TableSetColumnIndex(column);
-		      ImGui::Text("Row %d Column %d", row, column);
-		    }
-		}
-	      ImGui::EndTable();
-	    }
+	    static std::string message = "";
+	    if( !(ui::EditorReady && ui::TexterReady))
+	    message = (std::to_string(extension_filter(ui::BrowserPath)).c_str());
+	    ImGui::Text(message.c_str());
+	      
+	    
       ImGui::EndChild();
 	  }
 	  ImGui::EndTabBar();
@@ -529,7 +434,7 @@ void TextEditorApp::AppendToRecentDocuments(const char* text) {
   }
 }
 
-bool TextEditorApp::CustomButton(const char* label, const ImVec2& size, const ImU32 textcolor) {
+bool CustomButton(const char* label, const ImVec2& size, const ImU32 textcolor = IM_COL32(255,255,255,255), const MyColors& Colors = ui::Editor.Colors) {
     ImGui::PushID(label);  // Push a unique ID to avoid ImGui ID conflicts
     static std::string s;
     bool selected = false;
@@ -560,4 +465,101 @@ bool TextEditorApp::CustomButton(const char* label, const ImVec2& size, const Im
 
     ImGui::PopID();
     return selected;  // Returns true if button was clicked
+}
+
+
+void showBrowser(ImVec2 size, unsigned int filter_min, unsigned int filter_max) {
+  float x = ImGui::GetContentRegionAvail().x;
+  float y = ImGui::GetTextLineHeightWithSpacing();
+  ImVec2 entrySize = ImVec2(x, y);
+
+  ImVec2 pos = ImGui::GetItemRectMin();
+  ImVec2 pos_end = ImGui::GetItemRectMax();
+  ImVec2 entrySizeWithSpacing = ImVec2(pos_end.x - pos.x, pos_end.y - pos.y + 2.);
+		
+  static std::filesystem::path dir = DEFAULT_LOAD_PATH;
+  ImGui::PushFont(TextEditorApp::CodeFont);
+	    
+  ImGui::BeginChild("browser", ImVec2(0, ImGui::GetContentRegionAvail().y / 2.), ImGuiChildFlags_ResizeY, ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoScrollWithMouse);
+  if(ImGui::IsMouseDown(0) && (ImGui::GetContentRegionAvail().y > (size.y - 150) ))
+    ImGui::SetWindowSize(ImVec2(0, size.y - 150));
+	    
+  ImGui::BeginChild("nav", ImVec2(0, entrySizeWithSpacing.y * 2.), 0, ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoScrollWithMouse);	    
+  if (CustomButton("./\t(refresh)", entrySize, IM_COL32(255,255,255,255), ui::Editor.Colors)) {
+    ui::Refresh();
+  }
+  if (CustomButton("../\t(up directory)", entrySize, IM_COL32(255,255,255,255), ui::Editor.Colors)) {
+    int n = 1;
+    if ( ((std::filesystem::directory_entry)dir).is_regular_file() ) n++;
+    for(int i = 0; i < n; i++){
+      dir = dir.parent_path();
+    }
+    ui::SetBrowserPath(dir);
+  }
+  ImGui::EndChild();
+		
+  ImGui::Separator();
+
+  static std::vector<std::filesystem::path> dirs;
+  static std::vector<std::filesystem::path> files;
+
+  ImGui::Text(ui::BrowserPath.c_str());
+  //static std::vector<std::filesystem::path> visited;
+		
+  if(!ui::EditorReady){
+    static bool startFlag = true;
+    if (startFlag){
+      startFlag = false;
+      ui::SetBrowserPath(dir);
+    }
+    dir = ui::GetBrowserPath();
+    if (!dir.has_extension() && ((std::filesystem::directory_entry)dir).is_directory() && !dir.empty()){
+      dirs.clear();
+      files.clear();
+      for(auto const& dir_entry : std::filesystem::directory_iterator{dir})
+	if(dir_entry.is_directory())
+	  dirs.push_back(dir_entry);
+      for(auto const& dir_entry : std::filesystem::directory_iterator{dir}){
+	if(dir_entry.is_regular_file()){
+	  //filter
+	  unsigned int filter = extension_filter(dir_entry.path());	  
+	  if ( (filter < filter_max) && (filter_min < filter) )
+	    files.push_back(dir_entry);
+	}
+      }
+    }
+    ui::EditorReady = true;
+  }
+		
+  ImU32 dirColor = IM_COL32(127,255,130,100);
+		
+  ImGui::BeginChild("dirs", ImVec2(0, entrySizeWithSpacing.y * fmin(7., dirs.size())), ((dirs.size() > 8) ? 0 : ImGuiChildFlags_AutoResizeY) | ImGuiChildFlags_ResizeY, 0);
+	    
+  for(std::filesystem::path dir_entry : dirs){
+    std::string label = dir_entry.filename().c_str();
+    label += "/";
+    if(CustomButton(label.c_str(), entrySize, dirColor, ui::Editor.Colors)){
+      dir = dir_entry.c_str();
+      puts(dir.c_str());
+      ui::SetBrowserPath(dir);
+      files.clear();
+      for(auto const& dir_entry : std::filesystem::directory_iterator{dir})
+	if(dir_entry.is_regular_file())
+	  files.push_back(dir_entry);
+    }
+  }
+
+  ImGui::EndChild();
+		
+  ImGui::Separator();
+		
+  ImGui::BeginChild("files", ImVec2(0, 0));
+  for(std::filesystem::path dir_entry : files)
+      if(CustomButton(dir_entry.filename().c_str(), entrySize, IM_COL32(255,255,255,255), ui::Editor.Colors)) ui::SetBrowserPath(dir_entry);
+  ImGui::EndChild();
+	    
+  ImGui::PopFont();
+		
+  ImGui::EndChild();
+    
 }

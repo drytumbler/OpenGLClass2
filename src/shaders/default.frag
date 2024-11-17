@@ -172,9 +172,9 @@ void main() {
 
         
     // Ambient light
-    float ambientStrength = 0.10;
+    float ambientStrength = 0.70;
     vec3 ambient = ambientStrength * lightColor.rgb;
-    vec3 finalColor = baseColor * (ambient + diff*roughness.g);
+    vec3 finalColor = baseColor * (ambient + (1.0 - ambientStrength) * diff*roughness.g);
     // Calculate the final color
     
       //if (fract(time*.1) > 0.5)

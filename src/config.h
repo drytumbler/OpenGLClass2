@@ -55,7 +55,27 @@
 #define MAX_RECENT_DOCUMENTS 10
 
 #define MAINX (.77)
-#define SIDEX (1.-MAINX)
+#define SIDEX (1. - MAINX)
+
+// FILTERS: filter array is define in extension_filter() in config.cpp. Could be a struct...
+/*    {".frag", ".vert", ".glsl", ".shader"},
+      {".png", ".jpg", ".bmp", ""},
+      {".obj", ".step", ".tris", ""},*/
+
+#define FILTER_SHADER(x)	( ((x) >= 0x11) && ((x) < 0x20) )
+#define FILTER_TEXTURE(x)   	( ((x) >= 0x21) && ((x) < 0x30) )
+#define FILTER_MODEL(x) 	( ((x) >= 0x31) && ((x) < 0x40) )
+
+#define FILTER_TRIS(x)      	(  (x) == 0x33  )
+#define FILTER_STEP(x)      	(  (x) == 0x32  )
+#define FILTER_OBJ(x)       	(  (x) == 0x31  )
+
+#define FILTER_BMP(x)       	(  (x) == 0x23  )
+#define FILTER_JPG(x)       	(  (x) == 0x22  )
+#define FILTER_PNG(x)       	(  (x) == 0x21  )
+
+#define FILTER_FRAG(x)       	(  (x) == 0x11  )
+#define FILTER_VERT(x)       	(  (x) == 0x12  )
 
 
 int checkAndCreateFile(const std::string& filename);
@@ -67,3 +87,4 @@ std::uintmax_t getFileSize(const std::string& filePath);
 std::string expandHome(const std::string& path);
 const char* getBaseName(std::filesystem::path path, char* basename, int size);
 std::string get_file_string(const char* filepath);
+unsigned int extension_filter(std::filesystem::path file);

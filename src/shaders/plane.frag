@@ -20,8 +20,11 @@ uniform vec3 camPos;
 uniform vec3 camDir;
 
 void main(){
-  vec3 baseColor =  texture(beach1, fragmentTexCoord).rgb;
+  vec2 tex = fragmentTexCoord;
+  vec3 baseColor =  texture(beach1, tex).rgb;
+  vec3 beachNormals =  texture(beach3, tex).rgb;
+  vec3 beachMask =  texture(beach2, tex).rgb;
+  float diffuse = max(0.0, dot(normalize(lightPos), fragmentNormals * beachNormals * beachMask));
 
-
-  gl_FragColor = vec4(vec3(baseColor), 1.0);
+  gl_FragColor = vec4(vec3(baseColor) * (.1 + diffuse), 1.0);
 }

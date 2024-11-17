@@ -29,6 +29,7 @@ set(SOURCES
     src/ui.cpp
     src/State.cpp
     src/TextureBrowser.cpp
+    src/Model.cpp
 )
 
 add_library(imgui STATIC

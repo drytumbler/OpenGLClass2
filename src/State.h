@@ -2,6 +2,8 @@
 #pragma once
 
 #define TEXTURES "../src/textures"
+#define MESHES "../src/models"
+#define SHADERS "../src/shaders"
 
 #include <iostream>
 #include <vector>

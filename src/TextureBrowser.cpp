@@ -48,10 +48,8 @@ void TextureBrowser::Display(ImVec2 space) {
     result = dir;
   }
 
-  //  if(ui::Refresh && strcmp(dir.c_str(), "") != 0){
   if(!ui::TexterReady){
-    //result = dir;
-    dir = ui::GetBrowserPath();
+    dir = ui::BrowserPath;
     if(dir.has_extension() &&
        (strcmp(dir.extension().c_str(), ".png") == 0) ||
        (strcmp(dir.extension().c_str(), ".jpg") == 0)
@@ -66,32 +64,35 @@ void TextureBrowser::Display(ImVec2 space) {
 	if(dir_entry.is_directory())
 	  dirs.push_back(dir_entry);
 	else if(dir_entry.is_regular_file())
-	  if(
+	  /* if(
 	     (strcmp(dir_entry.path().extension().c_str(), ".png") == 0) ||
 	     (strcmp(dir_entry.path().extension().c_str(), ".jpg") == 0)
 	     )
+	  */
 	    files.push_back(dir_entry);
       }
     }
     ui::TexterReady = true;
   }
   
-  if(ImGui::BeginCombo("#dir1", choice_t.c_str())){
-    //ui::Refresh = true;
-    char comp[64];
-    snprintf(comp, sizeof(choice_t) + 6, "./ (%s)", choice_t.c_str());
-    if(ImGui::Selectable(comp)) {
+  if(ImGui::BeginCombo("##", choice_t.c_str())){
+    char box[64];
+    snprintf(box, sizeof(choice_t) + 6, "./ (%s)", choice_t.c_str());
+    if(ImGui::Selectable(box)) {
       choice = 0;
-      choice_t = "./";
       ui::Refresh();
     }
     if(ImGui::Selectable("../ (up directory)")){
       choice = 0;
-      if(dir.has_parent_path())
-	{
-	  ui::SetBrowserPath(dir.parent_path());
-	  dir = dir.parent_path();
-	}
+      int n = 1;
+      if ( ((std::filesystem::directory_entry)dir).is_regular_file() ) n++;
+      for (int i = 0; i < n; i++){
+	if(dir.has_parent_path())
+	  {
+	    ui::SetBrowserPath(dir.parent_path());
+	    dir = dir.parent_path();
+	  }
+      }
       
       choice_t = dir.filename();
       choice_t += "/";
@@ -131,6 +132,8 @@ void TextureBrowser::Display(ImVec2 space) {
 	
       }
     }
+
+    // logic below needs some cleanup
     int n = 2 + dirs.size();
     
       result = (choice <= n) ? dir : files[choice - 1 - n]; // -1 because choice 0 does nothing
@@ -151,7 +154,10 @@ void TextureBrowser::Display(ImVec2 space) {
   }
   
   ImGui::Text(result.c_str());
-  ImGui::BeginChild("upper", ImVec2(0, ImGui::GetContentRegionAvail().y / 2.));
+  int num_files = files.size();
+  ImGui::Text(num_files == 1 ? "%d file found" : "%d files found", num_files);
+  
+  ImGui::BeginChild("preview", ImVec2(0, ImGui::GetContentRegionAvail().y / 2.));
   
   if (Preview.GetID()){
     //    float y = ImGui::GetContentRegionAvail().y; 

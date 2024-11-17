@@ -21,12 +21,12 @@ uniform mat4 camMatrix;
 //uniform float scale;
 
 void main(){
-     crntPos = vec3(model * vec4(vertexPos, 1.0f));
+     crntPos = vec3(10. * model * vec4(vertexPos, 1.0f));
      gl_Position = camMatrix * vec4(crntPos, 1.0f);
      //fragmentColor = vertexColor;
      //fragmentColor = colors[gl_VertexID];
      //fragmentTexCoord = vec2(0.25 * scale, 0.25 * scale) * (texPos + vertexPos.xy + vec2(2.0));
-     fragmentTexCoord = texPos;
+     fragmentTexCoord = 10.*texPos;
      //vertexNormal = normalize(model*vec4(vertexNormals, 0.0)).xyz;
      //if (fract(time*0.5) > 0.5)
      fragmentNormals = normalize(model * vec4(vertexNormals, 0.)).xyz;
