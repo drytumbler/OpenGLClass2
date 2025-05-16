@@ -57,7 +57,14 @@ From the /src directory, run this command. Compiling from the base directory wil
 #+begin_src
 cmake -S .. -B ../build -DCMAKE_BUILD_TYPE=Debug && cmake --build ../build
 #+end_src
-
+** Running the 'shaderToy'
+Cd into the build directory and run ./shaderToy:
+#+begin_src
+cd ../build && ./shaderToy
+#+end_src
+Click the file menu en select 'Open'. In the dialog browse to 'OpenGLClass2/src/shader' and choose 'shadertoy.frag'.
+Below the text area, hit the refresh button and the shader should load.
+Use wasd/zqsd space and control to move. Click to mouse and drag to rotate the camera.
 * Changelog :exclude:
 22:14:36 | OpenGLClass2 >> tree src/
 src/
