@@ -51,7 +51,7 @@ git clone https://github.com/drytumbler/OpenGLClass2.git
 #+end_src
 First cd into the /src directory!
 #+begin_src 
-cd ~/OpenGLClass2/src
+cd ./OpenGLClass2/src
 #+end_src
 From the /src directory, run this command. Compiling from the base directory will not work for now.
 #+begin_src
